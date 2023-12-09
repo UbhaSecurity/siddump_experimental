@@ -32,6 +32,7 @@ CHANNEL prevchn[3];
 CHANNEL prevchn2[3];
 FILTER filt;
 FILTER prevfilt;
+INSTRUMENT instruments[3]; // One instrument per SID channel
 
 extern unsigned short pc;
 
@@ -67,6 +68,18 @@ unsigned char freqtblhi[] = {
   0x22,0x24,0x27,0x29,0x2b,0x2e,0x31,0x34,0x37,0x3a,0x3e,0x41,
   0x45,0x49,0x4e,0x52,0x57,0x5c,0x62,0x68,0x6e,0x75,0x7c,0x83,
   0x8b,0x93,0x9c,0xa5,0xaf,0xb9,0xc4,0xd0,0xdd,0xea,0xf8,0xff};
+
+// Function to display instrument data
+void displayInstrumentData(int channel)
+{
+  printf("Instrument for Channel %d:\n", channel);
+  printf("  Waveform: %02X\n", instruments[channel].waveform);
+  printf("  Attack:   %02X\n", instruments[channel].attack);
+  printf("  Decay:    %02X\n", instruments[channel].decay);
+  printf("  Sustain:  %02X\n", instruments[channel].sustain);
+  printf("  Release:  %02X\n", instruments[channel].release);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -299,8 +312,8 @@ int main(int argc, char **argv)
   }
   printf("\n");
 
-  // Data collection & display loop
-  while (frames < firstframe + seconds*50)
+ // Data collection & display loop
+  while (frames < firstframe + seconds * 50)
   {
     int c;
 
@@ -323,14 +336,19 @@ int main(int argc, char **argv)
     // Get SID parameters from each channel and the filter
     for (c = 0; c < 3; c++)
     {
-      chn[c].freq = mem[0xd400 + 7*c] | (mem[0xd401 + 7*c] << 8);
-      chn[c].pulse = (mem[0xd402 + 7*c] | (mem[0xd403 + 7*c] << 8)) & 0xfff;
-      chn[c].wave = mem[0xd404 + 7*c];
-      chn[c].adsr = mem[0xd406 + 7*c] | (mem[0xd405 + 7*c] << 8);
+      chn[c].freq = mem[0xd400 + 7 * c] | (mem[0xd401 + 7 * c] << 8);
+      chn[c].pulse = (mem[0xd402 + 7 * c] | (mem[0xd403 + 7 * c] << 8)) & 0xfff;
+      chn[c].wave = mem[0xd404 + 7 * c];
+      chn[c].adsr = mem[0xd406 + 7 * c] | (mem[0xd405 + 7 * c] << 8);
+
+      // Collect instrument data
+      instruments[c].waveform = chn[c].wave;
+      instruments[c].attack = (chn[c].adsr >> 4) & 0x0F;
+      instruments[c].decay = chn[c].adsr >> 12;
+      instruments[c].sustain = (chn[c].adsr >> 8) & 0x0F;
+      instruments[c].release = chn[c].adsr & 0x0F;
     }
-    filt.cutoff = (mem[0xd415] << 5) | (mem[0xd416] << 8);
-    filt.ctrl = mem[0xd417];
-    filt.type = mem[0xd418];
+
 
     // Frame display
     if (frames >= firstframe)
@@ -490,6 +508,16 @@ int main(int argc, char **argv)
         }
       }
     }
+
+  // Display instrument data for each channel
+    for (c = 0; c < 3; c++)
+    {
+      displayInstrumentData(c);
+    }
+
+    // ... Rest of the code ...
+  }
+
 
     // Advance to next frame
     frames++;
