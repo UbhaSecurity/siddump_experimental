@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
-#include <cpu.h>
+#include "cpu.h"
 
 // Constants
 #define MAX_INSTR 0x100000
