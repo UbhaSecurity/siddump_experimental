@@ -46,8 +46,6 @@ CHANNEL prevchn2[3];
 FILTER filt;
 FILTER prevfilt;
 INSTRUMENT instruments[3]; // One instrument per SID channel
-unsigned short pc;
-
 extern unsigned short pc;
 
 const char *notename[] =
