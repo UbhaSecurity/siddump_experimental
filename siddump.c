@@ -29,9 +29,11 @@ typedef struct
 
 typedef struct
 {
-  unsigned short cutoff;
-  unsigned char ctrl;
-  unsigned char type;
+    unsigned short cutoff;
+    unsigned char ctrl;
+    unsigned char type;
+    unsigned short freq; // Add freq member
+    unsigned char resonance; // Add resonance member
 } FILTER;
 
 // Function prototypes
