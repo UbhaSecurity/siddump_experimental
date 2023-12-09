@@ -118,7 +118,17 @@ int main(int argc, char **argv)
   unsigned loadsize;
   unsigned loadaddress;
   unsigned initaddress;
-  unsigned playaddress;
+  unsigned playaddress;uber@music:~/source/siddump_experimental$ make
+gcc -O3 -Wall   -c -o siddump.o siddump.c
+siddump.c:551:6: error: redefinition of ‘displayInstrumentData’
+  551 | void displayInstrumentData(int channel)
+      |      ^~~~~~~~~~~~~~~~~~~~~
+siddump.c:87:6: note: previous definition of ‘displayInstrumentData’ with type ‘void(int)’
+   87 | void displayInstrumentData(int channel)
+      |      ^~~~~~~~~~~~~~~~~~~~~
+make: *** [<builtin>: siddump.o] Error 1
+uber@music:~/source/siddump_experimental$ 
+
   unsigned dataoffset;
   FILE *in;
   char *sidname = 0;
@@ -547,17 +557,6 @@ unsigned short readword(FILE *f)
   fread(&res, 2, 1, f);
   return (res[0] << 8) | res[1];
 }
-
-void displayInstrumentData(int channel)
-{
-  printf("Instrument for Channel %d:\n", channel);
-  printf("  Waveform: %02X\n", instruments[channel].waveform);
-  printf("  Attack:   %02X\n", instruments[channel].attack);
-  printf("  Decay:    %02X\n", instruments[channel].decay);
-  printf("  Sustain:  %02X\n", instruments[channel].sustain);
-  printf("  Release:  %02X\n", instruments[channel].release);
-}
-
 
 
 
