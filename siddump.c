@@ -18,6 +18,15 @@ typedef struct
 
 typedef struct
 {
+  unsigned char waveform;
+  unsigned char attack;
+  unsigned char decay;
+  unsigned char sustain;
+  unsigned char release;
+} INSTRUMENT;
+
+typedef struct
+{
   unsigned short cutoff;
   unsigned char ctrl;
   unsigned char type;
