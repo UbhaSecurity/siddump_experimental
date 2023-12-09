@@ -118,17 +118,7 @@ int main(int argc, char **argv)
   unsigned loadsize;
   unsigned loadaddress;
   unsigned initaddress;
-  unsigned playaddress;uber@music:~/source/siddump_experimental$ make
-gcc -O3 -Wall   -c -o siddump.o siddump.c
-siddump.c:551:6: error: redefinition of ‘displayInstrumentData’
-  551 | void displayInstrumentData(int channel)
-      |      ^~~~~~~~~~~~~~~~~~~~~
-siddump.c:87:6: note: previous definition of ‘displayInstrumentData’ with type ‘void(int)’
-   87 | void displayInstrumentData(int channel)
-      |      ^~~~~~~~~~~~~~~~~~~~~
-make: *** [<builtin>: siddump.o] Error 1
-uber@music:~/source/siddump_experimental$ 
-
+  unsigned playaddress;
   unsigned dataoffset;
   FILE *in;
   char *sidname = 0;
@@ -532,7 +522,6 @@ uber@music:~/source/siddump_experimental$
         }
       }
     }
-
 
 
     // Advance to next frame
