@@ -3,10 +3,11 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
-#include "cpu.h"
 
+// Constants
 #define MAX_INSTR 0x100000
 
+// Structs
 typedef struct
 {
   unsigned short freq;
@@ -32,16 +33,19 @@ typedef struct
   unsigned char type;
 } FILTER;
 
-int main(int argc, char **argv);
+// Function prototypes
 unsigned char readbyte(FILE *f);
 unsigned short readword(FILE *f);
+void displayInstrumentData(int channel);
 
+// Global variables
 CHANNEL chn[3];
 CHANNEL prevchn[3];
 CHANNEL prevchn2[3];
 FILTER filt;
 FILTER prevfilt;
 INSTRUMENT instruments[3]; // One instrument per SID channel
+unsigned short pc;
 
 extern unsigned short pc;
 
@@ -518,14 +522,6 @@ int main(int argc, char **argv)
       }
     }
 
-  // Display instrument data for each channel
-    for (c = 0; c < 3; c++)
-    {
-      displayInstrumentData(c);
-    }
-
-    // ... Rest of the code ...
-  }
 
 
     // Advance to next frame
@@ -534,6 +530,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
+// Function implementations
 unsigned char readbyte(FILE *f)
 {
   unsigned char res;
@@ -548,6 +545,16 @@ unsigned short readword(FILE *f)
 
   fread(&res, 2, 1, f);
   return (res[0] << 8) | res[1];
+}
+
+void displayInstrumentData(int channel)
+{
+  printf("Instrument for Channel %d:\n", channel);
+  printf("  Waveform: %02X\n", instruments[channel].waveform);
+  printf("  Attack:   %02X\n", instruments[channel].attack);
+  printf("  Decay:    %02X\n", instruments[channel].decay);
+  printf("  Sustain:  %02X\n", instruments[channel].sustain);
+  printf("  Release:  %02X\n", instruments[channel].release);
 }
 
 
