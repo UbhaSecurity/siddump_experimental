@@ -272,38 +272,34 @@ int main(int argc, char **argv)
   fread(&mem[loadaddress], loadsize, 1, in);
   fclose(in);
 
-  // Print info & run initroutine
-  printf("Load address: $%04X Init address: $%04X Play address: $%04X\n", loadaddress, initaddress, playaddress);
-  printf("Calling initroutine with subtune %d\n", subtune);
-  mem[0x01] = 0x37;
-  initcpu(initaddress, subtune, 0, 0);
-  instr = 0;
-  while (runcpu())
-  {
-    // Allow SID model detection (including $d011 wait) to eventually terminate
-    ++mem[0xd012];
-    if (!mem[0xd012] || ((mem[0xd011] & 0x80) && mem[0xd012] >= 0x38))
+ // Print info & run initroutine
+    printf("Load address: $%04X Init address: $%04X Play address: $%04X\n", loadaddress, initaddress, playaddress);
+    printf("Calling initroutine with subtune %d\n", subtune);
+    mem[0x01] = 0x37;
+    initcpu(initaddress, subtune, 0, 0);
+    instr = 0;
+    
+    // Loop for initialization routine
+    while (runcpu())
     {
-        mem[0xd011] ^= 0x80;
-        mem[0xd012] = 0x00;
+        instr++;
+        if (instr > MAX_INSTR)
+        {
+            printf("Warning: CPU executed a high number of instructions in init, breaking\n");
+            break;
+        }
     }
-    instr++;
-    if (instr > MAX_INSTR)
-    {
-      printf("Warning: CPU executed a high number of instructions in init, breaking\n");
-      break;
-    }
-  }
 
-  if (playaddress == 0)
-  {
-    printf("Warning: SID has play address 0, reading from interrupt vector instead\n");
-    if ((mem[0x01] & 0x07) == 0x5)
-      playaddress = mem[0xfffe] | (mem[0xffff] << 8);
-    else
-      playaddress = mem[0x314] | (mem[0x315] << 8);
-    printf("New play address is $%04X\n", playaddress);
-  }
+    // Check play address
+    if (playaddress == 0)
+    {
+        printf("Warning: SID has play address 0, reading from interrupt vector instead\n");
+        if ((mem[0x01] & 0x07) == 0x5)
+            playaddress = mem[0xfffe] | (mem[0xffff] << 8);
+        else
+            playaddress = mem[0x314] | (mem[0x315] << 8);
+        printf("New play address is $%04X\n", playaddress);
+    }
 
   // Clear channelstructures in preparation & print first time info
   memset(&chn, 0, sizeof chn);
@@ -319,61 +315,61 @@ int main(int argc, char **argv)
     printf(" Cycl RL RB |");
   }
   printf("\n");
-  printf("+-------+---------------------------+---------------------------+---------------------------+---------------+");
-  if (profiling)
-  {
-    printf("------------+");
-  }
-  printf("\n");
+ printf("+-------+---------------------------+---------------------------+---------------------------+---------------+");
+    if (profiling)
+    { // CPU cycles, Raster lines, Raster lines with badlines on every 8th line, first line included
+        printf("------------+");
+    }
+    printf("\n");
 
-// Data collection & display loop
-while (frames < firstframe + seconds * 50)
-{
-    int c;
-
-    // Run the playroutine
-    instr = 0;
-    initcpu(playaddress, 0, 0, 0);
-    while (runcpu())
+    // Data collection & display loop
+    while (frames < firstframe + seconds * 50)
     {
-        instr++;
-        if (instr > MAX_INSTR)
+        int c;
+
+        // Run the playroutine
+        instr = 0;
+        initcpu(playaddress, 0, 0, 0);
+        while (runcpu())
         {
-            printf("Error: CPU executed abnormally high amount of instructions in playroutine, exiting\n");
-            return 1;
+            instr++;
+            if (instr > MAX_INSTR)
+            {
+                printf("Error: CPU executed abnormally high amount of instructions in playroutine, exiting\n");
+                return 1;
+            }
+            // Test for jump into Kernal interrupt handler exit
+            if ((mem[0x01] & 0x07) != 0x5 && (pc == 0xea31 || pc == 0xea81))
+                break;
         }
-        // Test for jump into Kernal interrupt handler exit
-        if ((mem[0x01] & 0x07) != 0x5 && (pc == 0xea31 || pc == 0xea81))
-            break;
-    }
 
-    // Get SID parameters from each channel and the filter
-    for (c = 0; c < 3; c++)
-    {
-        chn[c].freq = mem[0xd400 + 7 * c] | (mem[0xd401 + 7 * c] << 8);
-        chn[c].pulse = (mem[0xd402 + 7 * c] | (mem[0xd403 + 7 * c] << 8)) & 0xfff;
-        chn[c].wave = mem[0xd404 + 7 * c];
-        chn[c].adsr = mem[0xd406 + 7 * c] | (mem[0xd405 + 7 * c] << 8);
+        // Get SID parameters from each channel and the filter
+        for (c = 0; c < 3; c++)
+        {
+            chn[c].freq = mem[0xd400 + 7 * c] | (mem[0xd401 + 7 * c] << 8);
+            chn[c].pulse = (mem[0xd402 + 7 * c] | (mem[0xd403 + 7 * c] << 8)) & 0xfff;
+            chn[c].wave = mem[0xd404 + 7 * c];
+            chn[c].adsr = mem[0xd406 + 7 * c] | (mem[0xd405 + 7 * c] << 8);
 
-        // Collect instrument data
-        instruments[c].waveform = chn[c].wave;
-        instruments[c].attack = (chn[c].adsr >> 4) & 0x0F;
-        instruments[c].decay = chn[c].adsr >> 12;
-        instruments[c].sustain = (chn[c].adsr >> 8) & 0x0F;
-        instruments[c].release = chn[c].adsr & 0x0F;
-    }
+            // Collect instrument data
+            instruments[c].waveform = chn[c].wave;
+            instruments[c].attack = (chn[c].adsr >> 4) & 0x0F;
+            instruments[c].decay = chn[c].adsr >> 12;
+            instruments[c].sustain = (chn[c].adsr >> 8) & 0x0F;
+            instruments[c].release = chn[c].adsr & 0x0F;
+        }
 
-    // Frame display
-    if (frames >= firstframe)
-    {
-        char output[512];
-        int time = frames - firstframe;
-        output[0] = 0;
+        // Frame display
+        if (frames >= firstframe)
+        {
+            char output[512];
+            int time = frames - firstframe;
+            output[0] = 0;
 
-        if (!timeseconds)
-            sprintf(&output[strlen(output)], "| %5d | ", time);
-        else
-            sprintf(&output[strlen(output)], "|%01d:%02d.%02d| ", time / 3000, (time / 50) % 60, time % 50);
+            if (!timeseconds)
+                sprintf(&output[strlen(output)], "| %5d | ", time);
+            else
+                sprintf(&output[strlen(output)], "|%01d:%02d.%02d| ", time / 3000, (time / 50) % 60, time % 50);
 
         // Loop for each channel
         for (c = 0; c < 3; c++)
@@ -488,15 +484,15 @@ while (frames < firstframe + seconds * 50)
             sprintf(&output[strlen(output)], ".. ");
 
         // Display the data for this frame
-        printf("%s\n", output);
-    }
+            printf("%s\n", output);
+        }
 
-    // Copy current channel values to previous values
-    memcpy(&prevchn2, &prevchn, sizeof(prevchn));
-    memcpy(&prevchn, &chn, sizeof(chn));
-    prevfilt = filt;
-    frames++;
-}
+        // Copy current channel values to previous values
+        memcpy(&prevchn2, &prevchn, sizeof(prevchn));
+        memcpy(&prevchn, &chn, sizeof(chn));
+        prevfilt = filt;
+        frames++;
+    }
 
   return 0;
 }
