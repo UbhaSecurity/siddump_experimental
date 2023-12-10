@@ -341,7 +341,7 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
     return 1;
   }
   fread(&mem[loadaddress], loadsize, 1, in);
-  fclose(in);fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueChar, chn[0].wave, chn[0].adsr, chn[0].pulse);
+  fclose(in);fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
 
 
   // Print info & run initroutine
@@ -482,7 +482,7 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
                             newnote = 1;
                         char *note; // Define 'note' variable
                         char absValue; // Define 'absValue' variable
-                       getNoteAndAbs(chn[c].freq, &note, &absValueChar);
+                       getNoteAndAbs(chn[c].freq, &note, &absValueStr);
                         sprintf(&output[strlen(output)], " %s %02X  ", note, absValue);
                     } else
                         sprintf(&output[strlen(output)], "(%s %02X) ", notename[chn[c].note], chn[c].note | 0x80);
