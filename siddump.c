@@ -45,6 +45,8 @@ FILTER filt;
 FILTER prevfilt;
 INSTRUMENT instruments[3]; // One instrument per SID channel
 extern unsigned short pc;
+unsigned char readbyte(FILE *f);
+unsigned short readword(FILE *f);
 
 const char *notename[] =
  {"C-0", "C#0", "D-0", "D#0", "E-0", "F-0", "F#0", "G-0", "G#0", "A-0", "A#0", "B-0",
@@ -508,7 +510,7 @@ int main(int argc, char **argv)
   // Close CSV file
     fclose(csvFile);
 
-  return 0;
+return 0;
 }
 
 // Function implementations
