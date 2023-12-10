@@ -503,34 +503,28 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
         sprintf(&output[strlen(output)], "| %4d %02X %02X ", cycles, rasterlines, rasterlinesbad);
       }
 
-// End of frame display, print info so far and copy SID registers to old registers
-sprintf(&output[strlen(output)], "|\n");
-if ((!lowres) || (!((frames - firstframe) % spacing)))
-{
-    // Move the debug print statement inside a loop that correctly iterates over the 'chn' array
-    for (c = 0; c < 3; c++)
-    {
+        // End of frame display, print info so far and copy SID registers to old registers
+        sprintf(&output[strlen(output)], "|\n");
 
-// this is where output goes
+        if ((!lowres) || (!((frames - firstframe) % spacing))) {
+            char csvOutput[1024];
+            convertToCSV(output, csvOutput);
+            printf("%s", output); // Print to console
 
-       char csvOutput[1024];
-        convertToCSV(output, csvOutput);
+            // Write frame data to CSV file (outside the channel loop)
+            fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,%04X,%s,%02X,%02X,%04X,%03X,%04X,%s,%02X,%02X,%04X,%03X,%04X,%02X,%s,%01X\n",
+                frames, // Frame number
+                chn[0].freq, notename[chn[0].note], chn[0].note | 0x80, chn[0].wave, chn[0].adsr, chn[0].pulse, // Channel 1 data
+                chn[1].freq, notename[chn[1].note], chn[1].note | 0x80, chn[1].wave, chn[1].adsr, chn[1].pulse, // Channel 2 data
+                chn[2].freq, notename[chn[2].note], chn[2].note | 0x80, chn[2].wave, chn[2].adsr, chn[2].pulse, // Channel 3 data
+                filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf // Filter data
+            );
 
-        // Print to console
-        printf("%s", output);
-
-// Inside the loop where you process each frame:
-fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,%04X,%s,%02X,%02X,%04X,%03X,%04X,%s,%02X,%02X,%04X,%03X,%04X,%02X,%s,%01X\n",
-        frames, // Frame number
-        chn[0].freq, notename[chn[0].note], chn[0].note | 0x80, chn[0].wave, chn[0].adsr, chn[0].pulse, // Channel 1 data
-        chn[1].freq, notename[chn[1].note], chn[1].note | 0x80, chn[1].wave, chn[1].adsr, chn[1].pulse, // Channel 2 data
-        chn[2].freq, notename[chn[2].note], chn[2].note | 0x80, chn[2].wave, chn[2].adsr, chn[2].pulse, // Channel 3 data
-        filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf // Filter data
-);
-    }
-
-    prevfilt = filt;
-}
+            for (c = 0; c < 3; c++) {
+                prevchn[c] = chn[c];
+            }
+            prevfilt = filt;
+        }
 
       // Print note/pattern separators
       if (spacing)
