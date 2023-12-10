@@ -525,3 +525,17 @@ int main(int argc, char **argv)
   fclose(csvFile);
   return 0;
 }
+
+unsigned char readbyte(FILE *f) {
+    int ch = fgetc(f);
+    if (ch == EOF) {
+        // Handle error or end of file
+    }
+    return (unsigned char)ch;
+}
+
+unsigned short readword(FILE *f) {
+    unsigned char lowbyte = readbyte(f);
+    unsigned char highbyte = readbyte(f);
+    return (highbyte << 8) | lowbyte;
+}
