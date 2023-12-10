@@ -68,6 +68,24 @@ unsigned char freqtblhi[] = {
   0x45,0x49,0x4e,0x52,0x57,0x5c,0x62,0x68,0x6e,0x75,0x7c,0x83,
   0x8b,0x93,0x9c,0xa5,0xaf,0xb9,0xc4,0xd0,0xdd,0xea,0xf8,0xff};
 
+// Function to convert output to CSV format
+void convertToCSV(char *output, char *csvOutput) {
+    // Implement the conversion logic here
+    // Replace spaces with commas, handle quotes if necessary, etc.
+    // For example, simply replace spaces with commas for a basic conversion
+    int i, j = 0;
+    for (i = 0; output[i] != '\0'; i++) {
+        if (output[i] != ' ') {
+            csvOutput[j++] = output[i];
+        } else {
+            csvOutput[j++] = ',';
+        }
+    }
+    csvOutput[j] = '\0';
+}
+
+
+
 int main(int argc, char **argv)
 {
   int subtune = 0;
@@ -100,13 +118,16 @@ int main(int argc, char **argv)
 // Declare the csvFile variable
   FILE *csvFile;
 
-  // Open the CSV file for writing
-  csvFile = fopen("output.csv", "w");
-  if (csvFile == NULL)
-  {
-    fprintf(stderr, "Error: Could not open CSV file for writing\n");
-    return 1;
-  }
+// Open the CSV file for writing
+    csvFile = fopen("output.csv", "w");
+    if (csvFile == NULL) {
+        fprintf(stderr, "Error: Could not open CSV file for writing\n");
+        return 1;
+    }
+
+    // Write CSV header
+    fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pul1,Freq2,Note2,Abs2,WF2,ADSR2,Pul2,Freq3,Note3,Abs3,WF3,ADSR3,Pul3,FCut,RC,Typ,V\n");
+
 
   // Scan arguments
   for (c = 1; c < argc; c++)
@@ -490,15 +511,14 @@ if ((!lowres) || (!((frames - firstframe) % spacing)))
 
 // this is where output goes
 
-// Print the output to the console
-printf("%s", output);
+       char csvOutput[1024];
+        convertToCSV(output, csvOutput);
 
-// Write the same output to the CSV file
-fprintf(csvFile, "%s", output);
+        // Print to console
+        printf("%s", output);
 
-        printf("Debug: Frame %d, Freq: %04X, Pulse: %04X, Wave: %02X, ADSR: %04X\n", 
-               frames, chn[c].freq, chn[c].pulse, chn[c].wave, chn[c].adsr);
-
+        // Write to CSV file
+        fprintf(csvFile, "%s\n", csvOutput);
         prevchn[c] = chn[c];
         prevchn2[c] = chn[c];
     }
