@@ -485,6 +485,9 @@ int main(int argc, char **argv)
       if ((!lowres) || (!((frames - firstframe) % spacing)))
       {
         printf("%s", output);
+            // Debug: Print key variable values to console
+    printf("Debug - Frame: %d, Freq: %04X, ADSR: %04X, Cutoff: %04X\n",
+           frames, chn[0].freq, chn[0].adsr, filt.cutoff);
         fprintf(csvFile, "%s", output);  // Write the same output to CSV file
         for (c = 0; c < 3; c++)
         {
