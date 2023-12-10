@@ -36,10 +36,6 @@ typedef struct
     unsigned char resonance; // Add resonance member
 } FILTER;
 
-// Function prototypes
-unsigned char readbyte(FILE *f);
-unsigned short readword(FILE *f);
-void displayInstrumentData(int channel);
 
 // Global variables
 CHANNEL chn[3];
@@ -84,7 +80,7 @@ unsigned char freqtblhi[] = {
   0x8b,0x93,0x9c,0xa5,0xaf,0xb9,0xc4,0xd0,0xdd,0xea,0xf8,0xff};
 
 // Function to display instrument data
-void displayInstrumentData(int channel)
+void displayInstrumentData(int channel, char *buffer, size_t bufferLen)
 {
   printf("Instrument for Channel %d:\n", channel);
   printf("  Waveform: %02X\n", instruments[channel].waveform);
@@ -334,8 +330,7 @@ int main(int argc, char **argv)
     printf("\n");
 
     // Data collection & display loop
-    while (frames < firstframe + seconds * 50)
-    {
+    while (frames < firstframe + seconds * 50) {
         int c;
 
         // Run the playroutine
