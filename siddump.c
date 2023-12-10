@@ -92,13 +92,13 @@ void convertToCSV(char *output, char *csvOutput) {
 }
 
 // Function to get note and abs values based on frequency
-void getNoteAndAbs(uint16_t freq, char **note, char *abs) {
+void getNoteAndAbs(uint16_t freq, char **note, char *absValue) {
     if (freq == 0x0000) {
         *note = "000";
-        *abs = '0';
+        *absValue = '0';
     } else {
         *note = notename[freq >> 8];
-        *abs = (freq & 0xFF) / 0xA + '0';
+        *absValue = (freq & 0xFF) / 0xA + '0';
     }
 }
 
@@ -396,97 +396,85 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
       else
         sprintf(&output[strlen(output)], "|%01d:%02d.%02d| ", time / 3000, (time / 50) % 60, time % 50);
 
-      // Loop for each channel
-      for (c = 0; c < 3; c++)
-      {
+     // Loop for each channel
+    for (c = 0; c < 3; c++) {
         int newnote = 0;
 
         // Keyoff-keyon sequence detection
-        if (chn[c].wave >= 0x10)
-        {
-          if ((chn[c].wave & 1) && ((!(prevchn2[c].wave & 1)) || (prevchn2[c].wave < 0x10)))
-            prevchn[c].note = -1;
+        if (chn[c].wave >= 0x10) {
+            if ((chn[c].wave & 1) && ((!(prevchn2[c].wave & 1)) || (prevchn2[c].wave < 0x10)))
+                prevchn[c].note = -1;
         }
 
         // Frequency
-        if ((frames == firstframe) || (prevchn[c].note == -1) || (chn[c].freq != prevchn[c].freq))
-        {
-          int d;
-          int dist = 0x7fffffff;
-          int delta = ((int)chn[c].freq) - ((int)prevchn2[c].freq);
+        if ((frames == firstframe) || (prevchn[c].note == -1) || (chn[c].freq != prevchn[c].freq)) {
+            int d;
+            int dist = 0x7fffffff;
+            int delta = ((int)chn[c].freq) - ((int)prevchn2[c].freq);
 
-          sprintf(&output[strlen(output)], "%04X ", chn[c].freq);
+            sprintf(&output[strlen(output)], "%04X ", chn[c].freq);
 
-          if (chn[c].wave >= 0x10)
-          {
-            // Get new note number
-            for (d = 0; d < 96; d++)
-            {
-              int cmpfreq = freqtbllo[d] | (freqtblhi[d] << 8);
-              int freq = chn[c].freq;
+            if (chn[c].wave >= 0x10) {
+                // Get new note number
+                for (d = 0; d < 96; d++) {
+                    int cmpfreq = freqtbllo[d] | (freqtblhi[d] << 8);
+                    int freq = chn[c].freq;
 
-              if (abs(freq - cmpfreq) < dist)
-              {
-                dist = abs(freq - cmpfreq);
-                // Favor the old note
-                if (d == prevchn[c].note)
-                  dist /= oldnotefactor;
-                chn[c].note = d;
-              }
-            }
+                    if (abs(freq - cmpfreq) < dist) {
+                        dist = abs(freq - cmpfreq);
+                        // Favor the old note
+                        if (d == prevchn[c].note)
+                            dist /= oldnotefactor;
+                        chn[c].note = d;
+                    }
+                }
 
-            // Print new note
-            if (chn[c].note != prevchn[c].note)
-            {
-              if (prevchn[c].note == -1)
-              {
-                if (lowres)
-                  newnote = 1;
-                sprintf(&output[strlen(output)], " %s %02X  ", notename[chn[c].note], chn[c].note | 0x80);
-              }
-              else
-                sprintf(&output[strlen(output)], "(%s %02X) ", notename[chn[c].note], chn[c].note | 0x80);
-            }
-            else
-            {
-              // If same note, print frequency change (slide/vibrato)
-              if (delta)
-              {
-                if (delta > 0)
-                  sprintf(&output[strlen(output)], "(+ %04X) ", delta);
-                else
-                  sprintf(&output[strlen(output)], "(- %04X) ", -delta);
-              }
-              else
+                // Print new note
+                if (chn[c].note != prevchn[c].note) {
+                    if (prevchn[c].note == -1) {
+                        if (lowres)
+                            newnote = 1;
+                        char *note; // Define 'note' variable
+                        char absValue; // Define 'absValue' variable
+                        getNoteAndAbs(chn[c].note, &note, &absValue);
+                        sprintf(&output[strlen(output)], " %s %02X  ", note, absValue);
+                    } else
+                        sprintf(&output[strlen(output)], "(%s %02X) ", notename[chn[c].note], chn[c].note | 0x80);
+                } else {
+                    // If same note, print frequency change (slide/vibrato)
+                    if (delta) {
+                        if (delta > 0)
+                            sprintf(&output[strlen(output)], "(+ %04X) ", delta);
+                        else
+                            sprintf(&output[strlen(output)], "(- %04X) ", -delta);
+                    } else
+                        sprintf(&output[strlen(output)], " ... ..  ");
+                }
+            } else
                 sprintf(&output[strlen(output)], " ... ..  ");
-            }
-          }
-          else
-            sprintf(&output[strlen(output)], " ... ..  ");
-        }
-        else
-          sprintf(&output[strlen(output)], "....  ... ..  ");
+        } else
+            sprintf(&output[strlen(output)], "....  ... ..  ");
 
         // Waveform
         if ((frames == firstframe) || (newnote) || (chn[c].wave != prevchn[c].wave))
-          sprintf(&output[strlen(output)], "%02X ", chn[c].wave);
+            sprintf(&output[strlen(output)], "%02X ", chn[c].wave);
         else
-          sprintf(&output[strlen(output)], ".. ");
+            sprintf(&output[strlen(output)], ".. ");
 
         // ADSR
         if ((frames == firstframe) || (newnote) || (chn[c].adsr != prevchn[c].adsr))
-          sprintf(&output[strlen(output)], "%04X ", chn[c].adsr);
+            sprintf(&output[strlen(output)], "%04X ", chn[c].adsr);
         else
-          sprintf(&output[strlen(output)], ".... ");
+            sprintf(&output[strlen(output)], ".... ");
 
         // Pulse
         if ((frames == firstframe) || (newnote) || (chn[c].pulse != prevchn[c].pulse))
-          sprintf(&output[strlen(output)], "%03X ", chn[c].pulse);
+            sprintf(&output[strlen(output)], "%03X ", chn[c].pulse);
         else
-          sprintf(&output[strlen(output)], "... ");
+            sprintf(&output[strlen(output)], "... ");
 
         sprintf(&output[strlen(output)], "| ");
-      }
+    }
 
       // Filter cutoff
       if ((frames == firstframe) || (filt.cutoff != prevfilt.cutoff))
