@@ -175,7 +175,7 @@ int main(int argc, char **argv)
   unsigned dataoffset;
 // ...
 const char *note;  // Corrected declaration
-char absValueStr[4]; // Assuming it's a string with a maximum of 3 characters + null terminator
+char absValueStr[4]; // String to store the absolute value in hexadecimal format
 // ...
 
   FILE *in;
