@@ -480,19 +480,22 @@ int main(int argc, char **argv)
         sprintf(&output[strlen(output)], "| %4d %02X %02X ", cycles, rasterlines, rasterlinesbad);
       }
 
-      // End of frame display, print info so far and copy SID registers to old registers
-      sprintf(&output[strlen(output)], "|\n");
-      if ((!lowres) || (!((frames - firstframe) % spacing)))
-      {
-        printf("Debug: Frame %d, Freq: %04X, Pulse: %04X, Wave: %02X, ADSR: %04X\n", frames, chn[c].freq, chn[c].pulse, chn[c].wave, chn[c].adsr);
-        for (c = 0; c < 3; c++)
-        {
-          prevchn[c] = chn[c];
-        }
-        prevfilt = filt;
-      }
-      for (c = 0; c < 3; c++)
+// End of frame display, print info so far and copy SID registers to old registers
+sprintf(&output[strlen(output)], "|\n");
+if ((!lowres) || (!((frames - firstframe) % spacing)))
+{
+    // Move the debug print statement inside a loop that correctly iterates over the 'chn' array
+    for (c = 0; c < 3; c++)
+    {
+        printf("Debug: Frame %d, Freq: %04X, Pulse: %04X, Wave: %02X, ADSR: %04X\n", 
+               frames, chn[c].freq, chn[c].pulse, chn[c].wave, chn[c].adsr);
+
+        prevchn[c] = chn[c];
         prevchn2[c] = chn[c];
+    }
+
+    prevfilt = filt;
+}
 
       // Print note/pattern separators
       if (spacing)
