@@ -97,32 +97,43 @@ void displayInstrumentData(int channel)
 
 int main(int argc, char **argv)
 {
-  int subtune = 0;
-  int seconds = 60;
-  int instr = 0;
-  int frames = 0;
-  int spacing = 0;
-  int pattspacing = 0;
-  int firstframe = 0;
-  int counter = 0;
-  int basefreq = 0;
-  int basenote = 0xb0;
-  int lowres = 0;
-  int rows = 0;
-  int oldnotefactor = 1;
-  int timeseconds = 0;
-  int usage = 0;
-  int profiling = 0;
-  unsigned loadend;
-  unsigned loadpos;
-  unsigned loadsize;
-  unsigned loadaddress;
-  unsigned initaddress;
-  unsigned playaddress;
-  unsigned dataoffset;
-  FILE *in;
-  char *sidname = 0;
-  int c;
+    int subtune = 0;
+    int seconds = 60;
+    int instr = 0;
+    int frames = 0;
+    int spacing = 0;
+    int pattspacing = 0;
+    int firstframe = 0;
+    int counter = 0;
+    int basefreq = 0;
+    int basenote = 0xb0;
+    int lowres = 0;
+    int rows = 0;
+    int oldnotefactor = 1;
+    int timeseconds = 0;
+    int usage = 0;
+    int profiling = 0;
+    unsigned loadend;
+    unsigned loadpos;
+    unsigned loadsize;
+    unsigned loadaddress;
+    unsigned initaddress;
+    unsigned playaddress;
+    unsigned dataoffset;
+    FILE *in, *csvFile;
+    char *sidname = 0;
+    char instrumentData[128]; // For CSV output
+    int c;
+
+ // Opening CSV File for writing
+    csvFile = fopen("output.csv", "w");
+    if (!csvFile) {
+        printf("Error: Couldn't open output CSV file.\n");
+        return 1;
+    }
+    // Writing header to CSV file
+    fprintf(csvFile, "Frame,Channel,Frequency,Note,NoteValue,Waveform,ADSR,Pulse,FilterCut,FilterRes,FilterType,InstrWaveform,InstrAttack,InstrDecay,InstrSustain,InstrRelease\n");
+
 
   // Scan arguments
   for (c = 1; c < argc; c++)
@@ -462,9 +473,12 @@ int main(int argc, char **argv)
             else
                 sprintf(&output[strlen(output)], "... ");
 
-            // Channel separator
-            if (c < 2)
-                sprintf(&output[strlen(output)], "| ");
+                      // Collect instrument data for CSV output
+                displayInstrumentData(c, instrumentData, sizeof(instrumentData));
+                sprintf(&output[strlen(output)], "%s", instrumentData);
+
+                if (c < 2) {
+                    strcat(output, ",");
         }
 
         // Filter display
@@ -485,6 +499,8 @@ int main(int argc, char **argv)
 
         // Display the data for this frame
             printf("%s\n", output);
+
+           fprintf(csvFile, "%s\n", output);
         }
 
         // Copy current channel values to previous values
