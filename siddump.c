@@ -566,15 +566,15 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
 // Write frame data to CSV file (outside the channel loop)
 fprintf(csvFile, "%d,%04X,", frames, chn[0].freq);
 // For Channel 0
-getNoteAndAbs(chn[0].freq, &note, &absValueChar);
+getNoteAndAbs(chn[0].freq, &note, absValueStr);
 // For Channel 0
-fprintf(csvFile, "%d,%04X,%s,%s,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
+printf(csvFile, "%d,%04X,%s,%s,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
 // For Channel 1
-getNoteAndAbs(chn[1].freq, &note, &absValueChar);
+getNoteAndAbs(chn[0].freq, &note, absValueStr);
 // For Channel 1
 fprintf(csvFile, "%04X,%s,%s,%02X,%04X,%03X,", chn[1].freq, note, absValueStr, chn[1].wave, chn[1].adsr, chn[1].pulse);
 // For Channel 2
-getNoteAndAbs(chn[2].freq, &note, &absValueChar);
+getNoteAndAbs(chn[0].freq, &note, absValueStr);
 // For Channel 2
 fprintf(csvFile, "%04X,%s,%s,%02X,%04X,%03X,", chn[2].freq, note, absValueStr, chn[2].wave, chn[2].adsr, chn[2].pulse);
 // Continue with the rest of the CSV line (Filter data)
