@@ -485,6 +485,7 @@ int main(int argc, char **argv)
       if ((!lowres) || (!((frames - firstframe) % spacing)))
       {
         printf("%s", output);
+        fprintf(csvFile, "%s", output);  // Write the same output to CSV file
         for (c = 0; c < 3; c++)
         {
           prevchn[c] = chn[c];
@@ -522,7 +523,7 @@ int main(int argc, char **argv)
     frames++;
   }
 
-  fclose(csvFile);
+  fclose(csvFile);  // Close the CSV file at the end
   return 0;
 }
 
