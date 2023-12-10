@@ -81,15 +81,11 @@ unsigned char freqtblhi[] = {
   0x45,0x49,0x4e,0x52,0x57,0x5c,0x62,0x68,0x6e,0x75,0x7c,0x83,
   0x8b,0x93,0x9c,0xa5,0xaf,0xb9,0xc4,0xd0,0xdd,0xea,0xf8,0xff};
 
-// Function to display instrument data
-void displayInstrumentData(int channel, char *buffer, size_t bufferLen)
+void displayInstrumentData(int channel, char *output, int outputSize)
 {
-  printf("Instrument for Channel %d:\n", channel);
-  printf("  Waveform: %02X\n", instruments[channel].waveform);
-  printf("  Attack:   %02X\n", instruments[channel].attack);
-  printf("  Decay:    %02X\n", instruments[channel].decay);
-  printf("  Sustain:  %02X\n", instruments[channel].sustain);
-  printf("  Release:  %02X\n", instruments[channel].release);
+  snprintf(output, outputSize, "Channel %d: Waveform %d, Attack %d, Decay %d, Sustain %d, Release %d",
+          channel, instruments[channel].waveform, instruments[channel].attack, instruments[channel].decay,
+          instruments[channel].sustain, instruments[channel].release);
 }
 
 
@@ -470,9 +466,9 @@ int main(int argc, char **argv)
             else
                 sprintf(&output[strlen(output)], "... ");
 
-                      // Collect instrument data for CSV output
-                displayInstrumentData(c, instrumentData, sizeof(instrumentData));
-                sprintf(&output[strlen(output)], "%s", instrumentData);
+    // Collect instrument data
+        displayInstrumentData(c, instrumentData, sizeof(instrumentData));
+        sprintf(&output[strlen(output)], "%s", instrumentData);
 
                 if (c < 2) {
                     strcat(output, ",");
