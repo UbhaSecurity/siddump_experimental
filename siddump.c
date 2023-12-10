@@ -124,8 +124,8 @@ int main(int argc, char **argv)
   unsigned playaddress;
   unsigned dataoffset;
 // ...
-char *note; // Define 'note' variable
-char absValue;   // Rename 'abs' variable to 'absValue'
+const char *note; // Update to const char *note;
+char absValue;    // No need to change this line
 // ...
 
   FILE *in;
