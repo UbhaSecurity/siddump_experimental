@@ -91,7 +91,6 @@ void convertToCSV(char *output, char *csvOutput) {
     csvOutput[j] = '\0';
 }
 
-// Function to get the note name and absolute value
 void getNoteAndAbs(uint16_t freq, const char **note, char *absValue) {
     *note = notename[freq >> 8];
     *absValue = (char)(freq & 0xFF);
@@ -100,8 +99,7 @@ void getNoteAndAbs(uint16_t freq, const char **note, char *absValue) {
 
 int main(int argc, char **argv)
 {
-    const char *note;
-    char abs;
+
   int subtune = 0;
   int seconds = 60;
   int instr = 0;
