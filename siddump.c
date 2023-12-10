@@ -92,8 +92,31 @@ void convertToCSV(char *output, char *csvOutput) {
 }
 
 void getNoteAndAbs(uint16_t freq, const char **note, char *absValue) {
-    *note = notename[freq >> 8];
-    *absValue = (char)(freq & 0xFF);
+    // Initialize minimum distance and index for the closest note
+    int minDist = INT_MAX;
+    int index = -1;
+
+    // Loop through each frequency in the frequency table
+    for (int i = 0; i < 96; i++) {
+        int cmpFreq = freqtbllo[i] | (freqtblhi[i] << 8);
+        int dist = abs(freq - cmpFreq);
+
+        // Update minimum distance and index if a closer frequency is found
+        if (dist < minDist) {
+            minDist = dist;
+            index = i;
+        }
+    }
+
+    // If a note is found, set the output parameters
+    if (index != -1) {
+        *note = notename[index];
+        *absValue = index + 0x80; // Assuming absolute value is index offset by 0x80
+    } else {
+        // Handle error or set default values if no close match is found
+        *note = "Unknown";
+        *absValue = 0;
+    }
 }
 
 
