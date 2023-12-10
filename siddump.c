@@ -519,10 +519,14 @@ if ((!lowres) || (!((frames - firstframe) % spacing)))
         // Print to console
         printf("%s", output);
 
-        // Write to CSV file
-        fprintf(csvFile, "%s\n", csvOutput);
-        prevchn[c] = chn[c];
-        prevchn2[c] = chn[c];
+// Inside the loop where you process each frame:
+fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,%04X,%s,%02X,%02X,%04X,%03X,%04X,%s,%02X,%02X,%04X,%03X,%04X,%02X,%s,%01X\n",
+        frames, // Frame number
+        chn[0].freq, notename[chn[0].note], chn[0].note | 0x80, chn[0].wave, chn[0].adsr, chn[0].pulse, // Channel 1 data
+        chn[1].freq, notename[chn[1].note], chn[1].note | 0x80, chn[1].wave, chn[1].adsr, chn[1].pulse, // Channel 2 data
+        chn[2].freq, notename[chn[2].note], chn[2].note | 0x80, chn[2].wave, chn[2].adsr, chn[2].pulse, // Channel 3 data
+        filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf // Filter data
+);
     }
 
     prevfilt = filt;
