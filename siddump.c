@@ -91,20 +91,17 @@ void convertToCSV(char *output, char *csvOutput) {
     csvOutput[j] = '\0';
 }
 
-// Function to get note and abs values based on frequency
-void getNoteAndAbs(uint16_t freq, char **note, char *absValue) {
-    if (freq == 0x0000) {
-        *note = "000";
-        *absValue = '0';
-    } else {
-        *note = notename[freq >> 8];
-        *absValue = (freq & 0xFF) / 0xA + '0';
-    }
+// Function to get the note name and absolute value
+void getNoteAndAbs(uint16_t freq, const char **note, char *absValue) {
+    *note = notename[freq >> 8];
+    *absValue = (char)(freq & 0xFF);
 }
 
 
 int main(int argc, char **argv)
 {
+    const char *note;
+    char abs;
   int subtune = 0;
   int seconds = 60;
   int instr = 0;
@@ -520,16 +517,14 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
 
 // Write frame data to CSV file (outside the channel loop)
 fprintf(csvFile, "%d,%04X,", frames, chn[0].freq);
-getNoteAndAbs(chn[0].freq, &note, &abs);
-fprintf(csvFile, "%s,%c,%02X,%02X,%04X,%03X,%04X,", note, abs, chn[0].wave, chn[0].adsr, chn[0].pulse);
+  getNoteAndAbs(chn[0].freq, &note, &abs);
+    fprintf(csvFile, "%s,%c,%02X,%02X,%04X,%03X,%04X,", note, abs, chn[0].wave, chn[0].adsr, chn[0].pulse);
 
-fprintf(csvFile, "%04X,", chn[1].freq);
-getNoteAndAbs(chn[1].freq, &note, &abs);
-fprintf(csvFile, "%s,%c,%02X,%02X,%04X,%03X,%04X,", note, abs, chn[1].wave, chn[1].adsr, chn[1].pulse);
+    getNoteAndAbs(chn[1].freq, &note, &abs);
+    fprintf(csvFile, "%s,%c,%02X,%02X,%04X,%03X,%04X,", note, abs, chn[1].wave, chn[1].adsr, chn[1].pulse);
 
-fprintf(csvFile, "%04X,", chn[2].freq);
-getNoteAndAbs(chn[2].freq, &note, &abs);
-fprintf(csvFile, "%s,%c,%02X,%02X,%04X,%03X,%04X,", note, abs, chn[2].wave, chn[2].adsr, chn[2].pulse);
+    getNoteAndAbs(chn[2].freq, &note, &abs);
+    fprintf(csvFile, "%s,%c,%02X,%02X,%04X,%03X,%04X,", note, abs, chn[2].wave, chn[2].adsr, chn[2].pulse);
 
 fprintf(csvFile, "%04X,%02X,%s,%01X\n", filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf);
 
