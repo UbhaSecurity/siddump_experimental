@@ -92,6 +92,13 @@ void convertToCSV(char *output, char *csvOutput) {
 }
 
 void getNoteAndAbs(uint16_t freq, const char **note, char *absValue) {
+    // Special case when frequency is 0000
+    if (freq == 0) {
+        *note = "000";      // Assign "000" to note
+        *absValue = 0x00;   // Assign 0 to absValue (assuming absValue is a single character)
+        return;
+    }
+
     // Initialize minimum distance and index for the closest note
     int minDist = INT_MAX;
     int index = -1;
