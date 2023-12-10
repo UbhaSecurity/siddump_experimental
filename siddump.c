@@ -4,6 +4,7 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
+#include <limits.h>
 #include "cpu.h"
 
 
