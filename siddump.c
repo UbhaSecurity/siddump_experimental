@@ -484,19 +484,7 @@ int main(int argc, char **argv)
       sprintf(&output[strlen(output)], "|\n");
       if ((!lowres) || (!((frames - firstframe) % spacing)))
       {
-// Print the output to the console
-printf("%s", output);
-
-// Debug: Print key variable values to console
-printf("Debug - Frame: %d, Freq: %04X, ADSR: %04X, Cutoff: %04X, Output: %s\n",
-       frames, chn[0].freq, chn[0].adsr, filt.cutoff, output);
-
-// Write the same output to the CSV file
-fprintf(csvFile, "%s", output);
-
-// Write the debug information to the CSV file
-fprintf(csvFile, "Debug - Frame: %d, Freq: %04X, ADSR: %04X, Cutoff: %04X, Output: %s\n",
-       frames, chn[0].freq, chn[0].adsr, filt.cutoff, output);
+        printf("Debug: Frame %d, Freq: %04X, Pulse: %04X, Wave: %02X, ADSR: %04X\n", frames, chn[c].freq, chn[c].pulse, chn[c].wave, chn[c].adsr);
         for (c = 0; c < 3; c++)
         {
           prevchn[c] = chn[c];
