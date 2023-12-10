@@ -538,22 +538,19 @@ fprintf(csvFile, "Debug - Frame: %d, Freq: %04X, ADSR: %04X, Cutoff: %04X, Outpu
   return 0;
 }
 
-unsigned char readbyte(FILE *f) {
-    int ch = fgetc(f);
-    if (ch == EOF) {
-        fprintf(stderr, "Reached EOF or encountered an error while reading a byte.\n");
-        // Additional error handling if needed
-    } else {
-        printf("Read byte: %02X at position %ld\n", (unsigned char)ch, ftell(f) - 1);
-    }
-    return (unsigned char)ch;
+
+unsigned char readbyte(FILE *f)
+{
+  unsigned char res;
+
+  fread(&res, 1, 1, f);
+  return res;
 }
 
-unsigned short readword(FILE *f) {
-    long pos_before = ftell(f);
-    unsigned char lowbyte = readbyte(f);
-    unsigned char highbyte = readbyte(f);
-    unsigned short word = (highbyte << 8) | lowbyte;
-    printf("Read word: %04X from position %ld to %ld\n", word, pos_before, ftell(f));
-    return word;
+unsigned short readword(FILE *f)
+{
+  unsigned char res[2];
+
+  fread(&res, 2, 1, f);
+  return (res[0] << 8) | res[1];
 }
