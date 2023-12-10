@@ -127,6 +127,25 @@ void NoteAndAbs(uint16_t freq, const char **note, char *absValue) {
     }
 }
 
+void getNoteAndAbs(uint16_t freq, const char **note, char *absValueStr) {
+    // Special case when frequency is 0000
+    if (freq == 0) {
+        *note = "000";
+        strcpy(absValueStr, "000"); // Copy "000" into the string
+        return;
+    }
+
+    // [Rest of the function...]
+    if (index != -1) {
+        *note = notename[index];
+        sprintf(absValueStr, "%02X", index + 0x80); // Assuming absolute value is index offset by 0x80, formatted as a hex string
+    } else {
+        *note = "Unknown";
+        strcpy(absValueStr, "00"); // Default value for unknown
+    }
+}
+
+
 
 int main(int argc, char **argv)
 {
@@ -156,7 +175,7 @@ int main(int argc, char **argv)
   unsigned dataoffset;
 // ...
 const char *note;  // Corrected declaration
-char absValueChar; // Renamed from 'abs'
+char absValueStr[4]; // Assuming it's a string with a maximum of 3 characters + null terminator
 // ...
 
   FILE *in;
@@ -548,13 +567,16 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
 fprintf(csvFile, "%d,%04X,", frames, chn[0].freq);
 // For Channel 0
 getNoteAndAbs(chn[0].freq, &note, &absValueChar);
-fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueChar, chn[0].wave, chn[0].adsr, chn[0].pulse);
+// For Channel 0
+fprintf(csvFile, "%d,%04X,%s,%s,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
 // For Channel 1
 getNoteAndAbs(chn[1].freq, &note, &absValueChar);
-fprintf(csvFile, "%04X,%s,%02X,%02X,%04X,%03X,", chn[1].freq, note, absValueChar, chn[1].wave, chn[1].adsr, chn[1].pulse);
+// For Channel 1
+fprintf(csvFile, "%04X,%s,%s,%02X,%04X,%03X,", chn[1].freq, note, absValueStr, chn[1].wave, chn[1].adsr, chn[1].pulse);
 // For Channel 2
 getNoteAndAbs(chn[2].freq, &note, &absValueChar);
-fprintf(csvFile, "%04X,%s,%02X,%02X,%04X,%03X,", chn[2].freq, note, absValueChar, chn[2].wave, chn[2].adsr, chn[2].pulse);
+// For Channel 2
+fprintf(csvFile, "%04X,%s,%s,%02X,%04X,%03X,", chn[2].freq, note, absValueStr, chn[2].wave, chn[2].adsr, chn[2].pulse);
 // Continue with the rest of the CSV line (Filter data)
 fprintf(csvFile, "%04X,%02X,%s,%01X\n", filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf);
             for (c = 0; c < 3; c++) {
