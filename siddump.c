@@ -156,7 +156,7 @@ int main(int argc, char **argv)
   unsigned dataoffset;
 // ...
 const char *note;  // Corrected declaration
-char abs;          // Corrected type for abs
+char absValueChar; // Renamed from 'abs'
 // ...
 
   FILE *in;
