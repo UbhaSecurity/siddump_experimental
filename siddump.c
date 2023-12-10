@@ -127,6 +127,7 @@ void NoteAndAbs(uint16_t freq, const char **note, char *absValue) {
     }
 }
 
+// Function to get Note and Absolute Value
 void getNoteAndAbs(uint16_t freq, const char **note, char *absValueStr) {
     // Special case when frequency is 0000
     if (freq == 0) {
@@ -135,16 +136,31 @@ void getNoteAndAbs(uint16_t freq, const char **note, char *absValueStr) {
         return;
     }
 
-    // [Rest of the function...]
+    // Initialize minimum distance and index for the closest note
+    int minDist = INT_MAX;
+    int index = -1;
+
+    // Loop through each frequency in the frequency table
+    for (int i = 0; i < 96; i++) {
+        int cmpFreq = freqtbllo[i] | (freqtblhi[i] << 8);
+        int dist = abs(freq - cmpFreq);
+
+        // Update minimum distance and index if a closer frequency is found
+        if (dist < minDist) {
+            minDist = dist;
+            index = i;
+        }
+    }
+
+    // If a note is found, set the output parameters
     if (index != -1) {
         *note = notename[index];
-        sprintf(absValueStr, "%02X", index + 0x80); // Assuming absolute value is index offset by 0x80, formatted as a hex string
+        sprintf(absValueStr, "%02X", index + 0x80); // Format as a hex string
     } else {
         *note = "Unknown";
         strcpy(absValueStr, "00"); // Default value for unknown
     }
 }
-
 
 
 int main(int argc, char **argv)
@@ -182,18 +198,16 @@ char absValueStr[4]; // String to store the absolute value in hexadecimal format
   char *sidname = 0;
   int c;
 
-// Declare the csvFile variable
-  FILE *csvFile;
-
-// Open the CSV file for writing
+ FILE *csvFile;
     csvFile = fopen("output.csv", "w");
     if (csvFile == NULL) {
         fprintf(stderr, "Error: Could not open CSV file for writing\n");
         return 1;
     }
 
-// Print headers for CSV file
-fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,ADSR2,Pulse2,Freq3,Note3,Abs3,WF3,ADSR3,Pulse3,FCut,RC,Type,Vol\n");
+    // Print headers for CSV file
+    fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,ADSR2,Pulse2,Freq3,Note3,Abs3,WF3,ADSR3,Pulse3,FCut,RC,Type,Vol\n");
+
 
   // Scan arguments
   for (c = 1; c < argc; c++)
@@ -480,9 +494,11 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
                     if (prevchn[c].note == -1) {
                         if (lowres)
                             newnote = 1;
-                        char *note; // Define 'note' variable
-                        char absValue; // Define 'absValue' variable
-                       getNoteAndAbs(chn[c].freq, &note, &absValueStr);
+    // For each channel, get the note and absolute value
+        char absValueStr[4]; // Buffer for the absolute value string
+        const char *note;    // Pointer for the note name
+                      // Call getNoteAndAbs for each channel
+
                         sprintf(&output[strlen(output)], " %s %02X  ", note, absValue);
                     } else
                         sprintf(&output[strlen(output)], "(%s %02X) ", notename[chn[c].note], chn[c].note | 0x80);
@@ -566,9 +582,8 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
 // Write frame data to CSV file (outside the channel loop)
 fprintf(csvFile, "%d,%04X,", frames, chn[0].freq);
 // For Channel 0
-getNoteAndAbs(chn[0].freq, &note, absValueStr);
-// For Channel 0
-printf(csvFile, "%d,%04X,%s,%s,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
+        getNoteAndAbs(chn[0].freq, &note, absValueStr);
+        fprintf(csvFile, "%d,%04X,%s,%s,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
 // For Channel 1
 getNoteAndAbs(chn[0].freq, &note, absValueStr);
 // For Channel 1
