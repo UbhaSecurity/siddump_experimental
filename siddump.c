@@ -538,20 +538,20 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
 
 // Write frame data to CSV file (outside the channel loop)
 fprintf(csvFile, "%d,%04X,", frames, chn[0].freq);
-  getNoteAndAbs(chn[0].freq, &note, &abs);
-   fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,", frames, chn[0].freq, notename[chn[0].note], chn[0].note | 0x80, chn[0].wave, chn[0].adsr, chn[0].pulse);
+// For Channel 0
+getNoteAndAbs(chn[0].freq, &note, &abs);
+fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,", frames, chn[0].freq, note, abs, chn[0].wave, chn[0].adsr, chn[0].pulse);
 
+// For Channel 1
+getNoteAndAbs(chn[1].freq, &note, &abs);
+fprintf(csvFile, "%04X,%s,%02X,%02X,%04X,%03X,", chn[1].freq, note, abs, chn[1].wave, chn[1].adsr, chn[1].pulse);
 
-    getNoteAndAbs(chn[1].freq, &note, &abs);
-fprintf(csvFile, "%04X,%s,%02X,%02X,%04X,%03X,", chn[1].freq, notename[chn[1].note], chn[1].note | 0x80, chn[1].wave, chn[1].adsr, chn[1].pulse);
+// For Channel 2
+getNoteAndAbs(chn[2].freq, &note, &abs);
+fprintf(csvFile, "%04X,%s,%02X,%02X,%04X,%03X,", chn[2].freq, note, abs, chn[2].wave, chn[2].adsr, chn[2].pulse);
 
-
-    getNoteAndAbs(chn[2].freq, &note, &abs);
-fprintf(csvFile, "%04X,%s,%02X,%02X,%04X,%03X,", chn[2].freq, notename[chn[2].note], chn[2].note | 0x80, chn[2].wave, chn[2].adsr, chn[2].pulse);
-
-
+// Continue with the rest of the CSV line (Filter data)
 fprintf(csvFile, "%04X,%02X,%s,%01X\n", filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf);
-
             for (c = 0; c < 3; c++) {
                 prevchn[c] = chn[c];
             }
