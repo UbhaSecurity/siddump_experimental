@@ -520,8 +520,6 @@ fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,%04X,%s,%02X,%02X,%04X,%03X,%04
     filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf // Filter data
 );
 
-
-
             for (c = 0; c < 3; c++) {
                 prevchn[c] = chn[c];
             }
