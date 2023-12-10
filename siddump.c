@@ -97,6 +97,17 @@ int main(int argc, char **argv)
   char *sidname = 0;
   int c;
 
+// Declare the csvFile variable
+  FILE *csvFile;
+
+  // Open the CSV file for writing
+  csvFile = fopen("output.csv", "w");
+  if (csvFile == NULL)
+  {
+    fprintf(stderr, "Error: Could not open CSV file for writing\n");
+    return 1;
+  }
+
   // Scan arguments
   for (c = 1; c < argc; c++)
   {
