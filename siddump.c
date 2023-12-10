@@ -487,6 +487,15 @@ if ((!lowres) || (!((frames - firstframe) % spacing)))
     // Move the debug print statement inside a loop that correctly iterates over the 'chn' array
     for (c = 0; c < 3; c++)
     {
+
+// this is where output goes
+
+// Print the output to the console
+printf("%s", output);
+
+// Write the same output to the CSV file
+fprintf(csvFile, "%s", output);
+
         printf("Debug: Frame %d, Freq: %04X, Pulse: %04X, Wave: %02X, ADSR: %04X\n", 
                frames, chn[c].freq, chn[c].pulse, chn[c].wave, chn[c].adsr);
 
