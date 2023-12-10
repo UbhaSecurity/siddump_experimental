@@ -92,7 +92,7 @@ void convertToCSV(char *output, char *csvOutput) {
     csvOutput[j] = '\0';
 }
 
-void getNoteAndAbs(uint16_t freq, const char **note, char *absValue) {
+void NoteAndAbs(uint16_t freq, const char **note, char *absValue) {
     // Special case when frequency is 0000
     if (freq == 0) {
         *note = "000";      // Assign "000" to note
@@ -398,7 +398,7 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
         break;
     }
 
-    // Get SID parameters from each channel and the filter
+    //  SID parameters from each channel and the filter
     for (c = 0; c < 3; c++)
     {
       chn[c].freq = mem[0xd400 + 7 * c] | (mem[0xd401 + 7 * c] << 8);
@@ -441,7 +441,7 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
             sprintf(&output[strlen(output)], "%04X ", chn[c].freq);
 
             if (chn[c].wave >= 0x10) {
-                // Get new note number
+                //  new note number
                 for (d = 0; d < 96; d++) {
                     int cmpfreq = freqtbllo[d] | (freqtblhi[d] << 8);
                     int freq = chn[c].freq;
@@ -462,7 +462,7 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
                             newnote = 1;
                         char *note; // Define 'note' variable
                         char absValue; // Define 'absValue' variable
-                        getNoteAndAbs(chn[c].note, &note, &absValue);
+                       getNoteAndAbs(chn[c].freq, &note, &absValueChar);
                         sprintf(&output[strlen(output)], " %s %02X  ", note, absValue);
                     } else
                         sprintf(&output[strlen(output)], "(%s %02X) ", notename[chn[c].note], chn[c].note | 0x80);
@@ -547,15 +547,15 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
 // Write frame data to CSV file (outside the channel loop)
 fprintf(csvFile, "%d,%04X,", frames, chn[0].freq);
 // For Channel 0
-getNoteAndAbs(chn[0].freq, &note, &abs);
+getNoteAndAbs(chn[0].freq, &note, &absValueChar);
 fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,", frames, chn[0].freq, note, abs, chn[0].wave, chn[0].adsr, chn[0].pulse);
 
 // For Channel 1
-getNoteAndAbs(chn[1].freq, &note, &abs);
+getNoteAndAbs(chn[1].freq, &note, &absValueChar);
 fprintf(csvFile, "%04X,%s,%02X,%02X,%04X,%03X,", chn[1].freq, note, abs, chn[1].wave, chn[1].adsr, chn[1].pulse);
 
 // For Channel 2
-getNoteAndAbs(chn[2].freq, &note, &abs);
+getNoteAndAbs(chn[2].freq, &note, &absValueChar);
 fprintf(csvFile, "%04X,%s,%02X,%02X,%04X,%03X,", chn[2].freq, note, abs, chn[2].wave, chn[2].adsr, chn[2].pulse);
 
 // Continue with the rest of the CSV line (Filter data)
