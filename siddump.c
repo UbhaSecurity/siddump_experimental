@@ -5,10 +5,8 @@
 #include <ctype.h>
 #include "cpu.h"
 
-// Constants
 #define MAX_INSTR 0x100000
 
-// Structs
 typedef struct
 {
   unsigned short freq;
@@ -20,33 +18,22 @@ typedef struct
 
 typedef struct
 {
-  unsigned char waveform;
-  unsigned char attack;
-  unsigned char decay;
-  unsigned char sustain;
-  unsigned char release;
-} INSTRUMENT;
-
-typedef struct
-{
-    unsigned short cutoff;
-    unsigned char ctrl;
-    unsigned char type;
-    unsigned short freq; // Add freq member
-    unsigned char resonance; // Add resonance member
+  unsigned short cutoff;
+  unsigned char ctrl;
+  unsigned char type;
 } FILTER;
 
+int main(int argc, char **argv);
+unsigned char readbyte(FILE *f);
+unsigned short readword(FILE *f);
 
-// Global variables
 CHANNEL chn[3];
 CHANNEL prevchn[3];
 CHANNEL prevchn2[3];
 FILTER filt;
 FILTER prevfilt;
-INSTRUMENT instruments[3]; // One instrument per SID channel
+
 extern unsigned short pc;
-unsigned char readbyte(FILE *f);
-unsigned short readword(FILE *f);
 
 const char *notename[] =
  {"C-0", "C#0", "D-0", "D#0", "E-0", "F-0", "F#0", "G-0", "G#0", "A-0", "A#0", "B-0",
@@ -81,53 +68,34 @@ unsigned char freqtblhi[] = {
   0x45,0x49,0x4e,0x52,0x57,0x5c,0x62,0x68,0x6e,0x75,0x7c,0x83,
   0x8b,0x93,0x9c,0xa5,0xaf,0xb9,0xc4,0xd0,0xdd,0xea,0xf8,0xff};
 
-void displayInstrumentData(int channel, char *output, int outputSize)
-{
-  snprintf(output, outputSize, "Channel %d: Waveform %d, Attack %d, Decay %d, Sustain %d, Release %d",
-          channel, instruments[channel].waveform, instruments[channel].attack, instruments[channel].decay,
-          instruments[channel].sustain, instruments[channel].release);
-}
-
-
 int main(int argc, char **argv)
 {
-    int subtune = 0;
-    int seconds = 60;
-    int instr = 0;
-    int frames = 0;
-    int spacing = 0;
-    int pattspacing = 0;
-    int firstframe = 0;
-    int counter = 0;
-    int basefreq = 0;
-    int basenote = 0xb0;
-    int lowres = 0;
-    int rows = 0;
-    int oldnotefactor = 1;
-    int timeseconds = 0;
-    int usage = 0;
-    int profiling = 0;
-    unsigned loadend;
-    unsigned loadpos;
-    unsigned loadsize;
-    unsigned loadaddress;
-    unsigned initaddress;
-    unsigned playaddress;
-    unsigned dataoffset;
-    FILE *in, *csvFile;
-    char *sidname = 0;
-    char instrumentData[128]; // For CSV output
-    int c;
-
- // Opening CSV File for writing
-    csvFile = fopen("output.csv", "w");
-    if (!csvFile) {
-        printf("Error: Couldn't open output CSV file.\n");
-        return 1;
-    }
-    // Writing header to CSV file
-    fprintf(csvFile, "Frame,Channel,Frequency,Note,NoteValue,Waveform,ADSR,Pulse,FilterCut,FilterRes,FilterType,InstrWaveform,InstrAttack,InstrDecay,InstrSustain,InstrRelease\n");
-
+  int subtune = 0;
+  int seconds = 60;
+  int instr = 0;
+  int frames = 0;
+  int spacing = 0;
+  int pattspacing = 0;
+  int firstframe = 0;
+  int counter = 0;
+  int basefreq = 0;
+  int basenote = 0xb0;
+  int lowres = 0;
+  int rows = 0;
+  int oldnotefactor = 1;
+  int timeseconds = 0;
+  int usage = 0;
+  int profiling = 0;
+  unsigned loadend;
+  unsigned loadpos;
+  unsigned loadsize;
+  unsigned loadaddress;
+  unsigned initaddress;
+  unsigned playaddress;
+  unsigned dataoffset;
+  FILE *in;
+  char *sidname = 0;
+  int c;
 
   // Scan arguments
   for (c = 1; c < argc; c++)
@@ -277,34 +245,38 @@ int main(int argc, char **argv)
   fread(&mem[loadaddress], loadsize, 1, in);
   fclose(in);
 
- // Print info & run initroutine
-    printf("Load address: $%04X Init address: $%04X Play address: $%04X\n", loadaddress, initaddress, playaddress);
-    printf("Calling initroutine with subtune %d\n", subtune);
-    mem[0x01] = 0x37;
-    initcpu(initaddress, subtune, 0, 0);
-    instr = 0;
-    
-    // Loop for initialization routine
-    while (runcpu())
+  // Print info & run initroutine
+  printf("Load address: $%04X Init address: $%04X Play address: $%04X\n", loadaddress, initaddress, playaddress);
+  printf("Calling initroutine with subtune %d\n", subtune);
+  mem[0x01] = 0x37;
+  initcpu(initaddress, subtune, 0, 0);
+  instr = 0;
+  while (runcpu())
+  {
+    // Allow SID model detection (including $d011 wait) to eventually terminate
+    ++mem[0xd012];
+    if (!mem[0xd012] || ((mem[0xd011] & 0x80) && mem[0xd012] >= 0x38))
     {
-        instr++;
-        if (instr > MAX_INSTR)
-        {
-            printf("Warning: CPU executed a high number of instructions in init, breaking\n");
-            break;
-        }
+        mem[0xd011] ^= 0x80;
+        mem[0xd012] = 0x00;
     }
+    instr++;
+    if (instr > MAX_INSTR)
+    {
+      printf("Warning: CPU executed a high number of instructions in init, breaking\n");
+      break;
+    }
+  }
 
-    // Check play address
-    if (playaddress == 0)
-    {
-        printf("Warning: SID has play address 0, reading from interrupt vector instead\n");
-        if ((mem[0x01] & 0x07) == 0x5)
-            playaddress = mem[0xfffe] | (mem[0xffff] << 8);
-        else
-            playaddress = mem[0x314] | (mem[0x315] << 8);
-        printf("New play address is $%04X\n", playaddress);
-    }
+  if (playaddress == 0)
+  {
+    printf("Warning: SID has play address 0, reading from interrupt vector instead\n");
+    if ((mem[0x01] & 0x07) == 0x5)
+      playaddress = mem[0xfffe] | (mem[0xffff] << 8);
+    else
+      playaddress = mem[0x314] | (mem[0x315] << 8);
+    printf("New play address is $%04X\n", playaddress);
+  }
 
   // Clear channelstructures in preparation & print first time info
   memset(&chn, 0, sizeof chn);
@@ -320,211 +292,225 @@ int main(int argc, char **argv)
     printf(" Cycl RL RB |");
   }
   printf("\n");
- printf("+-------+---------------------------+---------------------------+---------------------------+---------------+");
-    if (profiling)
-    { // CPU cycles, Raster lines, Raster lines with badlines on every 8th line, first line included
-        printf("------------+");
+  printf("+-------+---------------------------+---------------------------+---------------------------+---------------+");
+  if (profiling)
+  {
+    printf("------------+");
+  }
+  printf("\n");
+ // Data collection & display loop
+  while (frames < firstframe + seconds * 50)
+  {
+    int c;
+
+    // Run the playroutine
+    instr = 0;
+    initcpu(playaddress, 0, 0, 0);
+    while (runcpu())
+    {
+      instr++;
+      if (instr > MAX_INSTR)
+      {
+        printf("Error: CPU executed abnormally high amount of instructions in playroutine, exiting\n");
+        return 1;
+      }
+      // Test for jump into Kernal interrupt handler exit
+      if ((mem[0x01] & 0x07) != 0x5 && (pc == 0xea31 || pc == 0xea81))
+        break;
     }
-    printf("\n");
 
-    // Data collection & display loop
-    while (frames < firstframe + seconds * 50) {
-        int c;
+    // Get SID parameters from each channel and the filter
+    for (c = 0; c < 3; c++)
+    {
+      chn[c].freq = mem[0xd400 + 7 * c] | (mem[0xd401 + 7 * c] << 8);
+      chn[c].pulse = (mem[0xd402 + 7 * c] | (mem[0xd403 + 7 * c] << 8)) & 0xfff;
+      chn[c].wave = mem[0xd404 + 7 * c];
+      chn[c].adsr = mem[0xd406 + 7 * c] | (mem[0xd405 + 7 * c] << 8);
+    }
+    filt.cutoff = (mem[0xd415] << 5) | (mem[0xd416] << 8);
+    filt.ctrl = mem[0xd417];
+    filt.type = mem[0xd418];
 
-        // Run the playroutine
-        instr = 0;
-        initcpu(playaddress, 0, 0, 0);
-        while (runcpu())
+    // Frame display
+    if (frames >= firstframe)
+    {
+      char output[512];
+      int time = frames - firstframe;
+      output[0] = 0;
+
+      if (!timeseconds)
+        sprintf(&output[strlen(output)], "| %5d | ", time);
+      else
+        sprintf(&output[strlen(output)], "|%01d:%02d.%02d| ", time / 3000, (time / 50) % 60, time % 50);
+
+      // Loop for each channel
+      for (c = 0; c < 3; c++)
+      {
+        int newnote = 0;
+
+        // Keyoff-keyon sequence detection
+        if (chn[c].wave >= 0x10)
         {
-            instr++;
-            if (instr > MAX_INSTR)
+          if ((chn[c].wave & 1) && ((!(prevchn2[c].wave & 1)) || (prevchn2[c].wave < 0x10)))
+            prevchn[c].note = -1;
+        }
+
+        // Frequency
+        if ((frames == firstframe) || (prevchn[c].note == -1) || (chn[c].freq != prevchn[c].freq))
+        {
+          int d;
+          int dist = 0x7fffffff;
+          int delta = ((int)chn[c].freq) - ((int)prevchn2[c].freq);
+
+          sprintf(&output[strlen(output)], "%04X ", chn[c].freq);
+
+          if (chn[c].wave >= 0x10)
+          {
+            // Get new note number
+            for (d = 0; d < 96; d++)
             {
-                printf("Error: CPU executed abnormally high amount of instructions in playroutine, exiting\n");
-                return 1;
+              int cmpfreq = freqtbllo[d] | (freqtblhi[d] << 8);
+              int freq = chn[c].freq;
+
+              if (abs(freq - cmpfreq) < dist)
+              {
+                dist = abs(freq - cmpfreq);
+                // Favor the old note
+                if (d == prevchn[c].note)
+                  dist /= oldnotefactor;
+                chn[c].note = d;
+              }
             }
-            // Test for jump into Kernal interrupt handler exit
-            if ((mem[0x01] & 0x07) != 0x5 && (pc == 0xea31 || pc == 0xea81))
-                break;
-        }
 
-        // Get SID parameters from each channel and the filter
-        for (c = 0; c < 3; c++)
-        {
-            chn[c].freq = mem[0xd400 + 7 * c] | (mem[0xd401 + 7 * c] << 8);
-            chn[c].pulse = (mem[0xd402 + 7 * c] | (mem[0xd403 + 7 * c] << 8)) & 0xfff;
-            chn[c].wave = mem[0xd404 + 7 * c];
-            chn[c].adsr = mem[0xd406 + 7 * c] | (mem[0xd405 + 7 * c] << 8);
-
-            // Collect instrument data
-            instruments[c].waveform = chn[c].wave;
-            instruments[c].attack = (chn[c].adsr >> 4) & 0x0F;
-            instruments[c].decay = chn[c].adsr >> 12;
-            instruments[c].sustain = (chn[c].adsr >> 8) & 0x0F;
-            instruments[c].release = chn[c].adsr & 0x0F;
-        }
-
-        // Frame display
-        if (frames >= firstframe)
-        {
-            char output[512];
-            int time = frames - firstframe;
-            output[0] = 0;
-
-            if (!timeseconds)
-                sprintf(&output[strlen(output)], "| %5d | ", time);
+            // Print new note
+            if (chn[c].note != prevchn[c].note)
+            {
+              if (prevchn[c].note == -1)
+              {
+                if (lowres)
+                  newnote = 1;
+                sprintf(&output[strlen(output)], " %s %02X  ", notename[chn[c].note], chn[c].note | 0x80);
+              }
+              else
+                sprintf(&output[strlen(output)], "(%s %02X) ", notename[chn[c].note], chn[c].note | 0x80);
+            }
             else
-                sprintf(&output[strlen(output)], "|%01d:%02d.%02d| ", time / 3000, (time / 50) % 60, time % 50);
-
-        // Loop for each channel
-        for (c = 0; c < 3; c++)
-        {
-            int newnote = 0;
-
-            // Keyoff-keyon sequence detection
-            if (chn[c].wave >= 0x10)
             {
-                if ((chn[c].wave & 1) && ((!(prevchn2[c].wave & 1)) || (prevchn2[c].wave < 0x10)))
-                    prevchn[c].note = -1;
-            }
-
-            // Frequency
-            if ((frames == firstframe) || (prevchn[c].note == -1) || (chn[c].freq != prevchn[c].freq))
-            {
-                int d;
-                int dist = 0x7fffffff;
-                int delta = ((int)chn[c].freq) - ((int)prevchn2[c].freq);
-
-                sprintf(&output[strlen(output)], "%04X ", chn[c].freq);
-
-                if (chn[c].wave >= 0x10)
-                {
-                    // Get new note number
-                    for (d = 0; d < 96; d++)
-                    {
-                        int cmpfreq = freqtbllo[d] | (freqtblhi[d] << 8);
-                        int freq = chn[c].freq;
-
-                        if (abs(freq - cmpfreq) < dist)
-                        {
-                            dist = abs(freq - cmpfreq);
-                            // Favor the old note
-                            if (d == prevchn[c].note)
-                                dist /= oldnotefactor;
-                            chn[c].note = d;
-                        }
-                    }
-
-                    // Print new note
-                    if (chn[c].note != prevchn[c].note)
-                    {
-                        if (prevchn[c].note == -1)
-                        {
-                            if (lowres)
-                                newnote = 1;
-                            sprintf(&output[strlen(output)], " %s %02X  ", notename[chn[c].note], chn[c].note | 0x80);
-                            // Display instrument data for the current channel
-                            displayInstrumentData(c);
-                        }
-                        else
-                            sprintf(&output[strlen(output)], "(%s %02X) ", notename[chn[c].note], chn[c].note | 0x80);
-                    }
-                    else
-                    {
-                        // If same note, print frequency change (slide/vibrato)
-                        if (delta)
-                        {
-                            if (delta > 0)
-                                sprintf(&output[strlen(output)], "(+ %04X) ", delta);
-                            else
-                                sprintf(&output[strlen(output)], "(- %04X) ", -delta);
-                        }
-                        else
-                            sprintf(&output[strlen(output)], " ... ..  ");
-                    }
-                }
+              // If same note, print frequency change (slide/vibrato)
+              if (delta)
+              {
+                if (delta > 0)
+                  sprintf(&output[strlen(output)], "(+ %04X) ", delta);
                 else
-                    sprintf(&output[strlen(output)], " ... ..  ");
+                  sprintf(&output[strlen(output)], "(- %04X) ", -delta);
+              }
+              else
+                sprintf(&output[strlen(output)], " ... ..  ");
             }
-            else
-                sprintf(&output[strlen(output)], "....  ... ..  ");
-
-            // Waveform
-            if ((frames == firstframe) || (newnote) || (chn[c].wave != prevchn[c].wave))
-                sprintf(&output[strlen(output)], "%02X ", chn[c].wave);
-            else
-                sprintf(&output[strlen(output)], ".. ");
-
-            // ADSR
-            if ((frames == firstframe) || (newnote) || (chn[c].adsr != prevchn[c].adsr))
-                sprintf(&output[strlen(output)], "%04X ", chn[c].adsr);
-            else
-                sprintf(&output[strlen(output)], ".... ");
-
-            // Pulse
-            if ((frames == firstframe) || (newnote) || (chn[c].pulse != prevchn[c].pulse))
-                sprintf(&output[strlen(output)], "%03X", chn[c].pulse);
-            else
-                sprintf(&output[strlen(output)], "... ");
-
-    // Collect instrument data
-        displayInstrumentData(c, instrumentData, sizeof(instrumentData));
-        sprintf(&output[strlen(output)], "%s", instrumentData);
-
-                if (c < 2) {
-                    strcat(output, ",");
+          }
+          else
+            sprintf(&output[strlen(output)], " ... ..  ");
         }
-
-        // Filter display
-        if ((frames == firstframe) || (filt.freq != prevfilt.freq))
-            sprintf(&output[strlen(output)], " | %04X ", filt.freq);
         else
-            sprintf(&output[strlen(output)], " | .... ");
+          sprintf(&output[strlen(output)], "....  ... ..  ");
 
-        if ((frames == firstframe) || (filt.cutoff != prevfilt.cutoff))
-            sprintf(&output[strlen(output)], "%02X ", filt.cutoff);
+        // Waveform
+        if ((frames == firstframe) || (newnote) || (chn[c].wave != prevchn[c].wave))
+          sprintf(&output[strlen(output)], "%02X ", chn[c].wave);
         else
-            sprintf(&output[strlen(output)], ".. ");
+          sprintf(&output[strlen(output)], ".. ");
 
-        if ((frames == firstframe) || (filt.resonance != prevfilt.resonance))
-            sprintf(&output[strlen(output)], "%02X ", filt.resonance);
+        // ADSR
+        if ((frames == firstframe) || (newnote) || (chn[c].adsr != prevchn[c].adsr))
+          sprintf(&output[strlen(output)], "%04X ", chn[c].adsr);
         else
-            sprintf(&output[strlen(output)], ".. ");
+          sprintf(&output[strlen(output)], ".... ");
 
-        // Display the data for this frame
-            printf("%s\n", output);
+        // Pulse
+        if ((frames == firstframe) || (newnote) || (chn[c].pulse != prevchn[c].pulse))
+          sprintf(&output[strlen(output)], "%03X ", chn[c].pulse);
+        else
+          sprintf(&output[strlen(output)], "... ");
 
-           fprintf(csvFile, "%s\n", output);
+        sprintf(&output[strlen(output)], "| ");
+      }
+
+      // Filter cutoff
+      if ((frames == firstframe) || (filt.cutoff != prevfilt.cutoff))
+        sprintf(&output[strlen(output)], "%04X ", filt.cutoff);
+      else
+        sprintf(&output[strlen(output)], ".... ");
+
+      // Filter control
+      if ((frames == firstframe) || (filt.ctrl != prevfilt.ctrl))
+        sprintf(&output[strlen(output)], "%02X ", filt.ctrl);
+      else
+        sprintf(&output[strlen(output)], ".. ");
+
+      // Filter passband
+      if ((frames == firstframe) || ((filt.type & 0x70) != (prevfilt.type & 0x70)))
+        sprintf(&output[strlen(output)], "%s ", filtername[(filt.type >> 4) & 0x7]);
+      else
+        sprintf(&output[strlen(output)], "... ");
+
+      // Mastervolume
+      if ((frames == firstframe) || ((filt.type & 0xf) != (prevfilt.type & 0xf)))
+        sprintf(&output[strlen(output)], "%01X ", filt.type & 0xf);
+      else
+        sprintf(&output[strlen(output)], ". ");
+
+      // Rasterlines / cycle count
+      if (profiling)
+      {
+        int cycles = cpucycles;
+        int rasterlines = (cycles + 62) / 63;
+        int badlines = ((cycles + 503) / 504);
+        int rasterlinesbad = (badlines * 40 + cycles + 62) / 63;
+        sprintf(&output[strlen(output)], "| %4d %02X %02X ", cycles, rasterlines, rasterlinesbad);
+      }
+
+      // End of frame display, print info so far and copy SID registers to old registers
+      sprintf(&output[strlen(output)], "|\n");
+      if ((!lowres) || (!((frames - firstframe) % spacing)))
+      {
+        printf("%s", output);
+        for (c = 0; c < 3; c++)
+        {
+          prevchn[c] = chn[c];
         }
-
-        // Copy current channel values to previous values
-        memcpy(&prevchn2, &prevchn, sizeof(prevchn));
-        memcpy(&prevchn, &chn, sizeof(chn));
         prevfilt = filt;
-        frames++;
+      }
+      for (c = 0; c < 3; c++)
+        prevchn2[c] = chn[c];
+
+      // Print note/pattern separators
+      if (spacing)
+      {
+        counter++;
+        if (counter >= spacing)
+        {
+          counter = 0;
+          if (pattspacing)
+          {
+            rows++;
+            if (rows >= pattspacing)
+            {
+              rows = 0;
+              printf("+=======+===========================+===========================+===========================+===============+\n");
+            }
+            else if (!lowres)
+              printf("+-------+---------------------------+---------------------------+---------------------------+---------------+\n");
+          }
+          else if (!lowres)
+            printf("+-------+---------------------------+---------------------------+---------------------------+---------------+\n");
+        }
+      }
     }
 
-  // Close CSV file
-    fclose(csvFile);
+    // Advance to the next frame
+    frames++;
+  }
 
-return 0;
+  fclose(csvFile);
+  return 0;
 }
-
-// Function implementations
-unsigned char readbyte(FILE *f)
-{
-  unsigned char res;
-
-  fread(&res, 1, 1, f);
-  return res;
-}
-
-unsigned short readword(FILE *f)
-{
-  unsigned char res[2];
-
-  fread(&res, 2, 1, f);
-  return (res[0] << 8) | res[1];
-}
-
-
-
