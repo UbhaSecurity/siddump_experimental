@@ -128,8 +128,11 @@ int main(int argc, char **argv)
   unsigned initaddress;
   unsigned playaddress;
   unsigned dataoffset;
-    char *note; // Define 'note' variable
-    char abs;   // Define 'abs' variable
+// ...
+char *note; // Define 'note' variable
+char absValue;   // Rename 'abs' variable to 'absValue'
+// ...
+
   FILE *in;
   char *sidname = 0;
   int c;
