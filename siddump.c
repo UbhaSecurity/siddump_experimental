@@ -70,21 +70,24 @@ unsigned char freqtblhi[] = {
 
 // Function to convert output to CSV format
 void convertToCSV(char *output, char *csvOutput) {
-    // Implement the conversion logic here
-    // Replace spaces with commas, handle quotes if necessary, etc.
-    // For example, simply replace spaces with commas for a basic conversion
     int i, j = 0;
+    int inDataField = 0; // To track when we are within a data field
+
     for (i = 0; output[i] != '\0'; i++) {
-        if (output[i] != ' ') {
-            csvOutput[j++] = output[i];
-        } else {
+        if (output[i] == '|') {
+            // Skip the '|' character
+            continue;
+        } else if (output[i] == ' ' && !inDataField) {
+            // Replace space with comma only if it's outside a data field
             csvOutput[j++] = ',';
+        } else {
+            // Copy the character as is
+            csvOutput[j++] = output[i];
+            inDataField = (output[i] != ' '); // Update inDataField status
         }
     }
     csvOutput[j] = '\0';
 }
-
-
 
 int main(int argc, char **argv)
 {
@@ -125,9 +128,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    // Write CSV header
-    fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pul1,Freq2,Note2,Abs2,WF2,ADSR2,Pul2,Freq3,Note3,Abs3,WF3,ADSR3,Pul3,FCut,RC,Typ,V\n");
-
+// Print headers for CSV file
+fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,ADSR2,Pulse2,Freq3,Note3,Abs3,WF3,ADSR3,Pulse3,FCut,RC,Type,Vol\n");
 
   // Scan arguments
   for (c = 1; c < argc; c++)
