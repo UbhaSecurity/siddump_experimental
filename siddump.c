@@ -514,11 +514,12 @@ fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,A
 // Write frame data to CSV file (outside the channel loop)
 fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,%04X,%s,%02X,%02X,%04X,%03X,%04X,%s,%02X,%02X,%04X,%03X,%04X,%02X,%s,%01X\n",
     frames, // Frame number
-    chn[0].freq, (chn[0].freq == 0x0000) ? "000" : notename[chn[0].note], chn[0].freq == 0x0000 ? 0x00 : chn[0].note | 0x80, chn[0].freq == 0x0000 ? 0x00 : chn[0].wave, chn[0].freq == 0x0000 ? 0x0000 : chn[0].adsr, chn[0].freq == 0x0000 ? 0x000 : chn[0].pulse, // Channel 1 data
-    chn[1].freq, (chn[1].freq == 0x0000) ? "000" : notename[chn[1].note], chn[1].freq == 0x0000 ? 0x00 : chn[1].note | 0x80, chn[1].freq == 0x0000 ? 0x00 : chn[1].wave, chn[1].freq == 0x0000 ? 0x0000 : chn[1].adsr, chn[1].freq == 0x0000 ? 0x000 : chn[1].pulse, // Channel 2 data
-    chn[2].freq, (chn[2].freq == 0x0000) ? "000" : notename[chn[2].note], chn[2].freq == 0x0000 ? 0x00 : chn[2].note | 0x80, chn[2].freq == 0x0000 ? 0x00 : chn[2].wave, chn[2].freq == 0x0000 ? 0x0000 : chn[2].adsr, chn[2].freq == 0x0000 ? 0x000 : chn[2].pulse, // Channel 3 data
+    (chn[0].freq == 0x0000) ? 0x0000 : chn[0].freq, (chn[0].freq == 0x0000) ? "000" : notename[chn[0].note], (chn[0].freq == 0x0000) ? 0x00 : chn[0].note | 0x80, (chn[0].freq == 0x0000) ? 0x00 : chn[0].wave, (chn[0].freq == 0x0000) ? 0x0000 : chn[0].adsr, (chn[0].freq == 0x0000) ? 0x000 : chn[0].pulse, // Channel 1 data
+    (chn[1].freq == 0x0000) ? 0x0000 : chn[1].freq, (chn[1].freq == 0x0000) ? "000" : notename[chn[1].note], (chn[1].freq == 0x0000) ? 0x00 : chn[1].note | 0x80, (chn[1].freq == 0x0000) ? 0x00 : chn[1].wave, (chn[1].freq == 0x0000) ? 0x0000 : chn[1].adsr, (chn[1].freq == 0x0000) ? 0x000 : chn[1].pulse, // Channel 2 data
+    (chn[2].freq == 0x0000) ? 0x0000 : chn[2].freq, (chn[2].freq == 0x0000) ? "000" : notename[chn[2].note], (chn[2].freq == 0x0000) ? 0x00 : chn[2].note | 0x80, (chn[2].freq == 0x0000) ? 0x00 : chn[2].wave, (chn[2].freq == 0x0000) ? 0x0000 : chn[2].adsr, (chn[2].freq == 0x0000) ? 0x000 : chn[2].pulse, // Channel 3 data
     filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf // Filter data
 );
+
 
             for (c = 0; c < 3; c++) {
                 prevchn[c] = chn[c];
