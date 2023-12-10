@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h> // Add this line to include the <stdint.h> header
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
 #include "cpu.h"
+
 
 #define MAX_INSTR 0x100000
 
