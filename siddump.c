@@ -574,7 +574,7 @@ char absValueStr[4]; // String to store the absolute value in hexadecimal format
                 char csvOutput[1024];
                 convertToCSV(output, csvOutput);
                 printf("%s", output); // Print to console
-/ Write frame data to CSV file (outside the channel loop)
+// Write frame data to CSV file (outside the channel loop)
 fprintf(csvFile, "%d,%04X,", frames, chn[0].freq);
 
 // For Channel 0
