@@ -350,7 +350,7 @@ char absValueStr[4]; // Buffer for the absolute value string
     return 1;
   }
   fread(&mem[loadaddress], loadsize, 1, in);
-  fclose(in);fprintf(csvFile, "%d,%04X,%s,%02X,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
+  fclose(in);fprintf(csvFile, "%d,%04X,%s,%s,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
 
 
   // Print info & run initroutine
