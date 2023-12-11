@@ -186,7 +186,7 @@ int main(int argc, char **argv)
   unsigned playaddress;
   unsigned dataoffset;
 // ...
-const char *note;  // Corrected declaration
+const char *note = NULL; // Initialized to NULL
 char absValueStr[4]; // Buffer for the absolute value string
 // ...
 
