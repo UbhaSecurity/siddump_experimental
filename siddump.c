@@ -495,7 +495,7 @@ char absValueStr[4]; // String to store the absolute value in hexadecimal format
         const char *note;    // Pointer for the note name
                       // Call getNoteAndAbs for each channel
 
-                        sprintf(&output[strlen(output)], " %s %02X  ", note,  absValue);
+                        sprintf(&output[strlen(output)], " %s %02X  ", note,  absValueStr);
                     } else
                         sprintf(&output[strlen(output)], "(%s %02X) ", notename[chn[c].note], chn[c].note | 0x80);
                 } else {
