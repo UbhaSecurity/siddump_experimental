@@ -92,21 +92,39 @@ void convertToCSV(char *output, char *csvOutput) {
     csvOutput[j] = '\0';
 }
 
+// Function to get Note and Absolute Value
 void getNoteAndAbs(uint16_t freq, const char **note, char *absValueStr) {
-    *note = "Unknown"; // Initialize to default value
+    // Initialize the note and the absolute value string with default values
+    *note = "Unknown"; 
+    strcpy(absValueStr, "00");
 
+    // Special case when frequency is 0000
     if (freq == 0) {
-        strcpy(absValueStr, "00");
+        *note = "000"; // Set the note to "000"
+        strcpy(absValueStr, "000"); // Set the absValueStr to "000"
         return;
     }
 
-    // ... [rest of the function]
+    // Initialize minimum distance and index for the closest note
+    int minDist = INT_MAX;
+    int index = -1;
 
+    // Loop through each frequency in the frequency table
+    for (int i = 0; i < 96; i++) {
+        int cmpFreq = freqtbllo[i] | (freqtblhi[i] << 8);
+        int dist = abs(freq - cmpFreq);
+
+        // Update minimum distance and index if a closer frequency is found
+        if (dist < minDist) {
+            minDist = dist;
+            index = i;
+        }
+    }
+
+    // If a note is found, set the output parameters
     if (index != -1) {
         *note = notename[index];
-        sprintf(absValueStr, "%02X", index + 0x80);
-    } else {
-        strcpy(absValueStr, "00"); // Default for unknown frequency
+        sprintf(absValueStr, "%02X", (unsigned int)(index + 0x80)); // Format as a hex string with explicit cast
     }
 }
 
