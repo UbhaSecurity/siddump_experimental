@@ -95,33 +95,29 @@ void convertToCSV(char *output, char *csvOutput) {
 void NoteAndAbs(uint16_t freq, const char **note, char *absValue) {
     // Special case when frequency is 0000
     if (freq == 0) {
-        *note = "000";      // Assign "000" to note
-        *absValue = 0x00;   // Assign 0 to absValue (assuming absValue is a single character)
+        *note = "000";
+        *absValue = 0x00;
         return;
     }
 
-    // Initialize minimum distance and index for the closest note
+    // Determine closest note
     int minDist = INT_MAX;
     int index = -1;
 
-    // Loop through each frequency in the frequency table
     for (int i = 0; i < 96; i++) {
         int cmpFreq = freqtbllo[i] | (freqtblhi[i] << 8);
         int dist = abs(freq - cmpFreq);
 
-        // Update minimum distance and index if a closer frequency is found
         if (dist < minDist) {
             minDist = dist;
             index = i;
         }
     }
 
-    // If a note is found, set the output parameters
     if (index != -1) {
         *note = notename[index];
-        *absValue = index + 0x80; // Assuming absolute value is index offset by 0x80
+        *absValue = index + 0x80;
     } else {
-        // Handle error or set default values if no close match is found
         *note = "Unknown";
         *absValue = 0;
     }
@@ -572,26 +568,27 @@ char absValueStr[4]; // String to store the absolute value in hexadecimal format
         sprintf(&output[strlen(output)], "| %4d %02X %02X ", cycles, rasterlines, rasterlinesbad);
       }
 
-        // End of frame display, print info so far and copy SID registers to old registers
-        sprintf(&output[strlen(output)], "|\n");
-
-        if ((!lowres) || (!((frames - firstframe) % spacing))) {
-            char csvOutput[1024];
-            convertToCSV(output, csvOutput);
-            printf("%s", output); // Print to console
-// Write frame data to CSV file (outside the channel loop)
+      // Print frame data
+            sprintf(&output[strlen(output)], "|\n");
+            if ((!lowres) || (!((frames - firstframe) % spacing))) {
+                char csvOutput[1024];
+                convertToCSV(output, csvOutput);
+                printf("%s", output); // Print to console
+/ Write frame data to CSV file (outside the channel loop)
 fprintf(csvFile, "%d,%04X,", frames, chn[0].freq);
+
 // For Channel 0
-        getNoteAndAbs(chn[0].freq, &note, absValueStr);
-        fprintf(csvFile, "%d,%04X,%s,%s,%02X,%04X,%03X,", frames, chn[0].freq, note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
-// For Channel 1
 getNoteAndAbs(chn[0].freq, &note, absValueStr);
+fprintf(csvFile, "%s,%s,%02X,%04X,%03X,", note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
+
 // For Channel 1
+getNoteAndAbs(chn[1].freq, &note, absValueStr);
 fprintf(csvFile, "%04X,%s,%s,%02X,%04X,%03X,", chn[1].freq, note, absValueStr, chn[1].wave, chn[1].adsr, chn[1].pulse);
+
 // For Channel 2
-getNoteAndAbs(chn[0].freq, &note, absValueStr);
-// For Channel 2
+getNoteAndAbs(chn[2].freq, &note, absValueStr);
 fprintf(csvFile, "%04X,%s,%s,%02X,%04X,%03X,", chn[2].freq, note, absValueStr, chn[2].wave, chn[2].adsr, chn[2].pulse);
+
 // Continue with the rest of the CSV line (Filter data)
 fprintf(csvFile, "%04X,%02X,%s,%01X\n", filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf);
             for (c = 0; c < 3; c++) {
