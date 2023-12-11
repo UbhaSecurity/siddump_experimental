@@ -606,7 +606,6 @@ typedef struct
   unsigned char type;
 } FILTER;
 
-int main(int argc, char **argv);
 unsigned char readbyte(FILE *f);
 unsigned short readword(FILE *f);
 
