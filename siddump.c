@@ -492,7 +492,7 @@ char absValueStr[4]; // Buffer for the absolute value string
                       // For each channel, get the note and absolute value
                       // Call getNoteAndAbs for each channel
 
-                        sprintf(&output[strlen(output)], " %s %02X  ", note,  absValueStr);
+                        sprintf(&output[strlen(output)], " %s %s  ", note,  absValueStr);
                     } else
                         sprintf(&output[strlen(output)], "(%s %02X) ", notename[chn[c].note], chn[c].note | 0x80);
                 } else {
