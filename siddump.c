@@ -154,10 +154,8 @@ int main(int argc, char **argv)
   unsigned initaddress;
   unsigned playaddress;
   unsigned dataoffset;
-// ...
-const char *note = NULL; // Initialized to NULL
-char absValueStr[4]; // Buffer for the absolute value string
-// ...
+  const char *note = "000"; // Default value set to "000"
+  char absValueStr[4] = "00";   // Default value
 
   FILE *in;
   char *sidname = 0;
