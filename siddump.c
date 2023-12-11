@@ -187,7 +187,7 @@ int main(int argc, char **argv)
   unsigned dataoffset;
 // ...
 const char *note;  // Corrected declaration
-char absValueStr[4]; // String to store the absolute value in hexadecimal format
+char absValueStr[4]; // Buffer for the absolute value string
 // ...
 
   FILE *in;
@@ -203,7 +203,6 @@ char absValueStr[4]; // String to store the absolute value in hexadecimal format
 
     // Print headers for CSV file
     fprintf(csvFile, "Frame,Freq1,Note1,Abs1,WF1,ADSR1,Pulse1,Freq2,Note2,Abs2,WF2,ADSR2,Pulse2,Freq3,Note3,Abs3,WF3,ADSR3,Pulse3,FCut,RC,Type,Vol\n");
-
 
   // Scan arguments
   for (c = 1; c < argc; c++)
@@ -490,9 +489,7 @@ char absValueStr[4]; // String to store the absolute value in hexadecimal format
                     if (prevchn[c].note == -1) {
                         if (lowres)
                             newnote = 1;
-    // For each channel, get the note and absolute value
-        char absValueStr[4]; // Buffer for the absolute value string
-        const char *note;    // Pointer for the note name
+                      // For each channel, get the note and absolute value
                       // Call getNoteAndAbs for each channel
 
                         sprintf(&output[strlen(output)], " %s %02X  ", note,  absValueStr);
