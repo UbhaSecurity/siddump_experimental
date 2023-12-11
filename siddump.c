@@ -535,26 +535,19 @@ int main(int argc, char **argv)
       // Print frame data
             sprintf(&output[strlen(output)], "|\n");
             if ((!lowres) || (!((frames - firstframe) % spacing))) {
-                char csvOutput[1024];
-                convertToCSV(output, csvOutput);
-                printf("%s", output); // Print to console
-// Write frame data to CSV file (outside the channel loop)
-fprintf(csvFile, "%d,%04X,", frames, chn[0].freq);
+            // Convert to CSV format and print to console
+            char csvOutput[1024];
+            convertToCSV(output, csvOutput);
+            printf("%s", output);
 
-// For Channel 0
-getNoteAndAbs(chn[0].freq, &note, absValueStr);
-fprintf(csvFile, "%s,%s,%02X,%04X,%03X,", note, absValueStr, chn[0].wave, chn[0].adsr, chn[0].pulse);
-
-// For Channel 1
-getNoteAndAbs(chn[1].freq, &note, absValueStr);
-fprintf(csvFile, "%04X,%s,%s,%02X,%04X,%03X,", chn[1].freq, note, absValueStr, chn[1].wave, chn[1].adsr, chn[1].pulse);
-
-// For Channel 2
-getNoteAndAbs(chn[2].freq, &note, absValueStr);
-fprintf(csvFile, "%04X,%s,%s,%02X,%04X,%03X,", chn[2].freq, note, absValueStr, chn[2].wave, chn[2].adsr, chn[2].pulse);
-
-// Continue with the rest of the CSV line (Filter data)
-fprintf(csvFile, "%04X,%02X,%s,%01X\n", filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf);
+            // Write frame data to CSV file
+            fprintf(csvFile, "%d,", frames);
+            for (c = 0; c < 3; c++) {
+                getNoteAndAbs(chn[c].freq, &note, absValueStr);
+                fprintf(csvFile, "%04X,%s,%s,%02X,%04X,%03X,", chn[c].freq, note, absValueStr, chn[c].wave, chn[c].adsr, chn[c].pulse);
+            }
+            fprintf(csvFile, "%04X,%02X,%s,%01X\n", filt.cutoff, filt.ctrl, filtername[(filt.type >> 4) & 0x7], filt.type & 0xf);
+        }
             for (c = 0; c < 3; c++) {
                 prevchn[c] = chn[c];
             }
