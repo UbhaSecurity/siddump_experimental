@@ -577,9 +577,9 @@ int main(int argc, char **argv)
       }
     }
 
-    // Advance to the next frame
+     // Advance to the next frame
     frames++;
-  }
+  } // This closing bracket ends the main function
 
   fclose(csvFile);  // Close the CSV file at the end
   return 0;
