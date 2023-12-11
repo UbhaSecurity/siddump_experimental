@@ -582,7 +582,7 @@ int main(int argc, char **argv)
     frames++;
   }
 
-  fclose(csvFile);  // Close the CSV file at the end
+fclose(csvFile); // Close the CSV file at the end
   return 0;
 }
 
