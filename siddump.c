@@ -92,72 +92,23 @@ void convertToCSV(char *output, char *csvOutput) {
     csvOutput[j] = '\0';
 }
 
-void NoteAndAbs(uint16_t freq, const char **note, char *absValue) {
-    // Special case when frequency is 0000
-    if (freq == 0) {
-        *note = "000";
-        *absValue = 0x00;
-        return;
-    }
-
-    // Determine closest note
-    int minDist = INT_MAX;
-    int index = -1;
-
-    for (int i = 0; i < 96; i++) {
-        int cmpFreq = freqtbllo[i] | (freqtblhi[i] << 8);
-        int dist = abs(freq - cmpFreq);
-
-        if (dist < minDist) {
-            minDist = dist;
-            index = i;
-        }
-    }
-
-    if (index != -1) {
-        *note = notename[index];
-        *absValue = index + 0x80;
-    } else {
-        *note = "Unknown";
-        *absValue = 0;
-    }
-}
-
-// Function to get Note and Absolute Value
 void getNoteAndAbs(uint16_t freq, const char **note, char *absValueStr) {
-    // Special case when frequency is 0000
+    *note = "Unknown"; // Initialize to default value
+
     if (freq == 0) {
-        *note = "000";
-        strcpy(absValueStr, "000"); // Copy "000" into the string
+        strcpy(absValueStr, "00");
         return;
     }
 
-    // Initialize minimum distance and index for the closest note
-    int minDist = INT_MAX;
-    int index = -1;
+    // ... [rest of the function]
 
-    // Loop through each frequency in the frequency table
-    for (int i = 0; i < 96; i++) {
-        int cmpFreq = freqtbllo[i] | (freqtblhi[i] << 8);
-        int dist = abs(freq - cmpFreq);
-
-        // Update minimum distance and index if a closer frequency is found
-        if (dist < minDist) {
-            minDist = dist;
-            index = i;
-        }
-    }
-
-    // If a note is found, set the output parameters
     if (index != -1) {
         *note = notename[index];
-        sprintf(absValueStr, "%02X", index + 0x80); // Format as a hex string
+        sprintf(absValueStr, "%02X", index + 0x80);
     } else {
-        *note = "Unknown";
-        strcpy(absValueStr, "00"); // Default value for unknown
+        strcpy(absValueStr, "00"); // Default for unknown frequency
     }
 }
-
 
 int main(int argc, char **argv)
 {
