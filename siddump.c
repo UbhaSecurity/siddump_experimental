@@ -581,10 +581,11 @@ int main(int argc, char **argv)  // Specify the return type as int
     frames++;
   } // This closing bracket ends the main function
 
-    // Replace the existing fclose(csvFile); with this:
-    if (csvFile) {
-        fclose(csvFile);  // Close the CSV file at the end
-    }
+// Replace the existing fclose(csvFile); with this:
+if (csvFile) {
+    fclose(csvFile);  // Close the CSV file at the end
+}
+
   return 0;
 }
 
