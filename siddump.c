@@ -575,9 +575,9 @@ int main(int argc, char **argv) {
       }
     }
 
-     // Advance to the next frame
+// Advance to the next frame
     frames++;
-  } // This closing bracket ends the main function
+  // } // This closing bracket ends the main function
 
 // Replace the existing fclose(csvFile); with this:
 if (csvFile) {
@@ -586,6 +586,7 @@ if (csvFile) {
 
   return 0;
 }
+
 
 
 unsigned char readbyte(FILE *f)
