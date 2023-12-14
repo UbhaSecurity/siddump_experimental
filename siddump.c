@@ -127,40 +127,38 @@ void getNoteAndAbs(uint16_t freq, const char **note, char *absValueStr) {
     }
 }
 
-int main(int argc, char **argv)  // Specify the return type as int
-{
+int main(int argc, char **argv) {
+    int subtune = 0;
+    int seconds = 60;
+    int instr = 0;
+    int frames = 0;
+    int spacing = 0;
+    int pattspacing = 0;
+    int firstframe = 0;
+    int counter = 0;
+    int basefreq = 0;
+    int basenote = 0xb0;
+    int lowres = 0;
+    int rows = 0;
+    int oldnotefactor = 1;
+    int timeseconds = 0;
+    int usage = 0;
+    int profiling = 0;
+    unsigned loadend;
+    unsigned loadpos;
+    unsigned loadsize;
+    unsigned loadaddress;
+    unsigned initaddress;
+    unsigned playaddress;
+    unsigned dataoffset;
+    const char *note = "000"; // Default value set to "000"
+    char absValueStr[4] = "00";   // Default value
 
-  int subtune = 0;
-  int seconds = 60;
-  int instr = 0;
-  int frames = 0;
-  int spacing = 0;
-  int pattspacing = 0;
-  int firstframe = 0;
-  int counter = 0;
-  int basefreq = 0;
-  int basenote = 0xb0;
-  int lowres = 0;
-  int rows = 0;
-  int oldnotefactor = 1;
-  int timeseconds = 0;
-  int usage = 0;
-  int profiling = 0;
-  unsigned loadend;
-  unsigned loadpos;
-  unsigned loadsize;
-  unsigned loadaddress;
-  unsigned initaddress;
-  unsigned playaddress;
-  unsigned dataoffset;
-  const char *note = "000"; // Default value set to "000"
-  char absValueStr[4] = "00";   // Default value
+    FILE *in;
+    char *sidname = 0;
+    int c;
 
-  FILE *in;
-  char *sidname = 0;
-  int c;
-
- FILE *csvFile;
+    FILE *csvFile;
     csvFile = fopen("output.csv", "w");
     if (csvFile == NULL) {
         fprintf(stderr, "Error: Could not open CSV file for writing\n");
